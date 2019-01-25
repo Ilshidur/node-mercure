@@ -6,10 +6,10 @@ TODO: README badges
 
 ## TODOs
 
-* 2 JWTs
+* Separate the unique JWT to 2 JWTs (publisher & subscriber)
 * Logging
 * HTTPS support
-* History
+* History database
 * Scalability
 * Unit tests
 
