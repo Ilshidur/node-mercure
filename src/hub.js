@@ -88,7 +88,7 @@ class Hub extends EventEmitter {
       // Check the allowed topics in the subscriber's JWT.
       let claims;
       try {
-        claims = this.authorize(client.req, null);
+        claims = await this.authorize(client.req, null);
       } catch (err) {
         client.res.writeHead(401);
         client.res.write('Unauthorized');

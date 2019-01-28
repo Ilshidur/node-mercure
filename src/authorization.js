@@ -2,9 +2,16 @@ const Cookie = require('cookie');
 const jwt = require('jsonwebtoken');
 const url = require('url');
 
-// TODO: Await jwt.verify
+jwt.verifyAsync = (token, jwtKey) => new Promise((resolve, reject) => {
+  jwt.verify(token, jwtKey, { complete: true }, (err, decoded) => {
+    if (err) {
+      return reject(err);
+    }
+    return resolve(decoded);
+  });
+});
 
-function authorize(req, jwtKey, publishAllowedOrigins = []) {
+async function authorize(req, jwtKey, publishAllowedOrigins = []) {
   const authHeader = req.headers['authorization'];
 
   let token;
@@ -15,7 +22,7 @@ function authorize(req, jwtKey, publishAllowedOrigins = []) {
       throw new Error('Invalid "Authorization" header.');
     }
 
-    return jwt.verify(token, jwtKey, { complete: true });
+    return await jwt.verifyAsync(token, jwtKey);
   }
 
   const cookie = Cookie.parse(req.headers.cookie || '');
@@ -26,7 +33,7 @@ function authorize(req, jwtKey, publishAllowedOrigins = []) {
 
   // CSRF attacks cannot occurs when using safe methods.
   if (req.method !== 'POST') {
-    return jwt.verify(token, jwtKey, { complete: true });
+    return await jwt.verifyAsync(token, jwtKey);
   }
 
   // Check 'Origin' & 'Referer' against publishAllowedOrigins
@@ -43,7 +50,7 @@ function authorize(req, jwtKey, publishAllowedOrigins = []) {
 
   const allowedOrigin = publishAllowedOrigins.find(allowedOrigin => allowedOrigin === origin);
   if (allowedOrigin) {
-    return jwt.verify(token, jwtKey, { complete: true });
+    return await jwt.verifyAsync(token, jwtKey);
   }
 
   throw new Error(`The origin "${origin}" is not allowed to post updates`);

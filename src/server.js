@@ -44,7 +44,7 @@ class Server {
       // Authorize publisher
       let claims;
       try {
-        claims = hub.authorize(req);
+        claims = await hub.authorize(req);
       } catch (err) {
         return res.status(401).send('Unauthorized');
       }
