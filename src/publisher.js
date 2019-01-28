@@ -67,7 +67,7 @@ class Publisher {
 
   async publish(topics, message, options = {}) {
     if (this.hub) {
-      return this.hub.dispatchUpdate(topics, message, options)
+      return await this.hub.dispatchUpdate(topics, message, options)
     } else {
       if (this.keystore) {
         // Message can be encrypted.

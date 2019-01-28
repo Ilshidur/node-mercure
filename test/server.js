@@ -5,17 +5,21 @@ const server = new Server({
   path: '/hub',
   // Additional check for POST request made in a browser :
   publishAllowedOrigins: ['http://localhost:3000'],
-  allowAnonymous: false, // Don't force subscriber authorization.
+  allowAnonymous: true, // Don't force subscriber authorization.
   maxTopics: 0, // Not limits
   ignorePublisherId: true,
   publishAllowedOrigins: null,
+  redis: {
+    host: 'localhost',
+    port: 6379,
+  },
 });
 
-server.listen(3000);
-
-// === TEST ===
-
 (async () => {
+
+  await server.listen(3000);
+
+  // === TEST ===
 
   // const publisher = new Publisher(server.hub);
 
@@ -65,4 +69,5 @@ server.listen(3000);
     console.log('Published', updateId);
   }, 5000);
 
-})();
+})()
+  .catch(console.error.bind(console));

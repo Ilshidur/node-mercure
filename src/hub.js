@@ -2,8 +2,8 @@ const crypto = require('crypto');
 const EventEmitter = require('events');
 const http = require('http');
 const jwt = require('jsonwebtoken');
-const uriTemplates = require('uri-templates');
 const SSE = require('sse');
+const uriTemplates = require('uri-templates');
 const util = require('util');
 const uuidv4 = require('uuid/v4');
 
@@ -11,6 +11,7 @@ const { authorize, getAuthorizedTargets } = require('./authorization');
 const Subscriber = require('./subscriber');
 const Update = require('./update');
 const History = require('./history');
+const { createRedisClient } = require('./redis');
 
 const defaultOptions = {
   jwtKey: '!UnsecureChangeMe!', // TODO: Generate random
@@ -44,9 +45,13 @@ class Hub extends EventEmitter {
     };
     this.server = server || createHttpServer();
 
-    this.subscribers = new Set();
+    this.redis = null;
+    if (this.options.redis) {
+      this.redis = createRedisClient(this.options.redis);
+    }
 
-    this.history = new History();
+    this.subscribers = new Set(); // TODO: Store in Redis
+    this.history = new History(this.redis);
   }
 
   get isMercureHub() {
@@ -57,16 +62,30 @@ class Hub extends EventEmitter {
     return authorize(req, this.options.jwtKey, this.options.publishAllowedOrigins);
   }
 
-  listen() {
+  async listen() {
     // TODO: Try to NOT immediately set the headers.
     const sse = new SSE(this.server, {
       path: this.options.path,
       verifyRequest: (req) => req.url.startsWith('/hub') && (req.method === 'GET' || req.method === 'HEAD')
     });
 
+    this.history.on('update', (update) => {
+      const subscribers = Array.from(this.subscribers).filter(subscriber => subscriber.canReceive(update))
+
+      // TODO: Send event to subscribers in ONE TIME.
+      for (const subscriber of subscribers) {
+        subscriber.send(update);
+      }
+
+      this.emit('publish', update, update.event.id);
+
+      // TODO: options.retry
+    });
+
+    await this.history.start();
+
     sse.on('connection', async (client, { topic: topics }) => {
       // Check the allowed topics in the subscriber's JWT.
-
       let claims;
       try {
         claims = this.authorize(client.req, null);
@@ -142,7 +161,7 @@ class Hub extends EventEmitter {
     }
   }
 
-  dispatchUpdate(topics, data, options = {}) {
+  async dispatchUpdate(topics, data, options = {}) {
     let updateId = options.id;
     if (!updateId || this.options.ignorePublisherId) {
       updateId = uuidv4();
@@ -163,18 +182,7 @@ class Hub extends EventEmitter {
       retry: Number(options.retry) || 0,
     });
 
-    this.history.push(update);
-
-    const subscribers = Array.from(this.subscribers).filter(subscriber => subscriber.canReceive(update))
-
-    // TODO: Send event to subscribers in ONE TIME.
-    for (const subscriber of subscribers) {
-      subscriber.send(update);
-    }
-
-    this.emit('publish', update, updateId);
-
-    // TODO: options.retry
+    await this.history.push(update);
 
     return updateId;
   }
@@ -216,6 +224,23 @@ class Hub extends EventEmitter {
     const jwtKey = buffer.toString('hex');
     console.log(`====================================\n\n\tNEW JWT KEY :\n\n${jwtKey}\n\n====================================`);
     this.changeJwtKey(jwtKey);
+  }
+
+  async end({ force = false } = {}) {
+    if (!force) {
+      for (const subscriber of this.subscribers) {
+        subscriber.closeConnection();
+      }
+    }
+
+    if (force) {
+      this.redis.end();
+    } else {
+      await this.redis.quitAsync();
+    }
+
+    await this.history.end({ force });
+    await this.server.close();
   }
 }
 

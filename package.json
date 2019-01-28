@@ -18,10 +18,12 @@
   "homepage": "https://github.com/Ilshidur/node-mercure#readme",
   "dependencies": {
     "axios": "^0.18.0",
+    "bluebird": "^3.5.3",
     "cookie": "0.3.1",
     "express": "4.16.4",
     "jsonwebtoken": "8.4.0",
     "node-jose": "^1.1.0",
+    "redis": "^2.8.0",
     "sse": "0.0.8",
     "uri-templates": "0.2.0",
     "uuid": "3.3.2"

@@ -8,7 +8,7 @@ class Subscriber {
   }
 
   send(update) {
-    this.sseClient.send(update.serialize());
+    this.sseClient.send(update.event);
   }
 
   closeConnection() {

@@ -6,7 +6,18 @@ class Update {
   }
 
   serialize() {
-    return this.event;
+    // TODO: Topics serialization
+    return JSON.stringify({
+      targets: this.targets,
+      topics: this.topics,
+      event: this.event,
+    });
+  }
+
+  static unserialize(str) {
+    const data = JSON.parse(str);
+    // TODO: Topics serialization
+    return new Update(data.targets, data.topics, data.event);
   }
 }
 

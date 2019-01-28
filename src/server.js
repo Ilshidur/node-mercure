@@ -96,11 +96,10 @@ class Server {
     };
   }
 
-  // TODO: Async
   // TODO: Pass addr
-  listen(port) {
+  async listen(port) {
     this.server.listen(port);
-    this.hub.listen();
+    await this.hub.listen();
   }
 
   generatePublishJwt(...args) {
@@ -109,6 +108,10 @@ class Server {
 
   generateSubscribeJwt(...args) {
     return this.hub.generateSubscribeJwt(...args);
+  }
+
+  async end({ force = false } = {}) {
+    await this.hub.end({ force });
   }
 }
 
