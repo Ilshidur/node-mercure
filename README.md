@@ -52,6 +52,8 @@ const hub = new Hub(server, {
   jwtKey: '!UnsecureChangeMe!',
   path: '/hub',
 });
+
+hub.listen();
 ```
 
 ### Hub server
