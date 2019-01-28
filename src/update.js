@@ -6,7 +6,6 @@ class Update {
   }
 
   serialize() {
-    // TODO: Topics serialization
     return JSON.stringify({
       targets: this.targets,
       topics: this.topics,
@@ -16,7 +15,6 @@ class Update {
 
   static unserialize(str) {
     const data = JSON.parse(str);
-    // TODO: Topics serialization
     return new Update(data.targets, data.topics, data.event);
   }
 }
