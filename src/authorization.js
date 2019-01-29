@@ -31,7 +31,7 @@ async function authorize(req, jwtKey, publishAllowedOrigins = []) {
     return false;
   }
 
-  // CSRF attacks cannot occurs when using safe methods.
+  // CSRF attacks cannot occur when using safe methods.
   if (req.method !== 'POST') {
     return await jwt.verifyAsync(token, jwtKey);
   }
