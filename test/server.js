@@ -21,6 +21,9 @@ const server = new Server({
 
   // === TEST ===
 
+  const crypto = require('crypto');
+  const util = require('util');
+
   // const publisher = new Publisher(server.hub);
 
   const jwt = await server.generatePublishJwt(['http://localhost:3000/books/{id}']);
@@ -33,7 +36,15 @@ const server = new Server({
   });
 
   console.log('Using encryption ...');
-  // await publisher.useEncryption({}); // TODO: set RSA private key
+  await publisher.useEncryption({
+    rsaPrivateKey: (await util.promisify(crypto.generateKeyPair)('rsa', {
+      modulusLength: 4096,
+      privateKeyEncoding: {
+        type: 'pkcs8',
+        format: 'pem',
+      },
+    })).privateKey,
+  });
   console.log('Generated keys !');
 
   server.hub.on('subscribe', (subscriber) => {
@@ -49,6 +60,10 @@ const server = new Server({
   });
 
   setInterval(async () => {
+    if (server.hub.getSubscribersCount() === 0) {
+      return;
+    }
+
     const data = {
       '@id': 'http://localhost:3000/books/666.jsonld' // TODO: Using JSON-LD
     };

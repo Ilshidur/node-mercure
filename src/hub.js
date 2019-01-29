@@ -58,6 +58,10 @@ class Hub extends EventEmitter {
     return true;
   }
 
+  getSubscribersCount() {
+    return this.subscribers.size;
+  }
+
   authorize(req) {
     return authorize(req, this.options.jwtKey, this.options.publishAllowedOrigins);
   }

@@ -13,6 +13,10 @@ TODO: README badges
 * Scalability
 * Unit tests
 
+## Requirements
+
+* node.js >= 11.7.0
+
 ## Features
 
 * 100% implementation of the protocol
@@ -140,6 +144,17 @@ await publisher.publish(
   [...], // Topics.
   JSON.stringify(data),
 );
+```
+
+Decrypting :
+
+```javascript
+const jose = require('node-jose');
+
+const encryptedData = 'ENCRYPTED DATA';
+const decrypted = await jose.JWE.createDecrypt(publisher.keystore).decrypt(encryptedData);
+
+console.log(decrypted.plaintext.toString());
 ```
 
 ## Kill switch

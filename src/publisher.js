@@ -18,8 +18,8 @@ class Publisher {
   async useEncryption({
     rsaPrivateKey = null
     // TODO: Support jwks
+    // TODO: Support RSA key passphrase
   } = {}) {
-    // TODO: Uncomment
     if (this.hub) {
       // If the Hub is in the same code base as the publisher, no need to encrypt.
       // This assumes that the Hub is handled by the developer, so it shall be trusted.
@@ -33,7 +33,7 @@ class Publisher {
         const { publicKey, privateKey } = await util.promisify(crypto.generateKeyPair)('rsa', {
           modulusLength: 4096,
           publicKeyEncoding: {
-            type: 'spki',
+            type: 'pkcs1',
             format: 'pem'
           },
           privateKeyEncoding: {
@@ -48,7 +48,10 @@ class Publisher {
         rsaPublicKey = publicKey;
       }
 
-      // TODO: Extract public key from private key
+      if (!rsaPublicKey) {
+        const key = crypto.createPublicKey(rsaPrivateKey);
+        rsaPublicKey = key.export({ type: 'pkcs1', format: 'pem' });
+      }
 
       const privateJwk = await jose.JWK.asKey(rsaPrivateKey, 'pem');
       const jwks = {
@@ -75,10 +78,6 @@ class Publisher {
         // Currently only supports 1 key-value pair.
         const publicJwk = this.keystore.get(this.kid, { kty: 'RSA' });
         message = await jose.JWE.createEncrypt({ format: 'compact' }, publicJwk).update(message).final();
-
-        // // Decrypting :
-        // const decrypted = await jose.JWE.createDecrypt(this.keystore).decrypt(encryptedData);
-        // console.log(JSON.parse(decrypted.plaintext.toString()));
       }
 
       const url = `${this.config.protocol}://${this.config.host}:${this.config.port}${this.config.path}`;
