@@ -14,7 +14,6 @@ const History = require('./history');
 const { createRedisClient } = require('./redis');
 
 const defaultOptions = {
-  jwtKey: '!UnsecureChangeMe!', // TODO: Generate random
   path: '/hub',
   allowAnonymous: false, // Don't force subscriber authorization.
   maxTopics: 0,
@@ -26,11 +25,7 @@ const initializeClient = SSE.Client.prototype.initialize;
 SSE.Client.prototype.initialize = () => {}; // Noop this in order to defer the client initialization.
 
 function createHttpServer() {
-  // TODO: Use HTTPS & HTTP/2
-  return http.createHttpServer((req, res) => {
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('okay'); // TODO: Different output
-  });
+  return http.createServer();
 }
 
 // One Hub per server, thus one per publisher.
@@ -38,12 +33,16 @@ class Hub extends EventEmitter {
   constructor(server, options) {
     super();
 
-    // TODO: Throw if server is undefined
     this.options = {
       ...defaultOptions,
       ...options || (typeof server.listen !== 'function' ? server : {})
     };
-    this.server = server || createHttpServer();
+
+    if (!this.options.jwtKey) {
+      throw new Error('Missing "jwtKey" option.');
+    }
+
+    this.server = typeof server.listen === 'function' ? server : createHttpServer();
 
     this.redis = null;
     if (this.options.redis) {
@@ -66,7 +65,15 @@ class Hub extends EventEmitter {
     return authorize(req, this.options.jwtKey, this.options.publishAllowedOrigins);
   }
 
-  async listen() {
+  async listen(port, addr = null) {
+    await new Promise((resolve, reject) => {
+      try {
+        this.server.listen(port, addr, resolve);
+      } catch (err) {
+        reject(err);
+      }
+    });
+
     // TODO: Try to NOT immediately set the headers.
     const sse = new SSE(this.server, {
       path: this.options.path,

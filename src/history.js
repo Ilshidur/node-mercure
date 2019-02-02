@@ -6,9 +6,11 @@ class History extends EventEmitter {
   constructor(redisClient) {
     super();
 
-    this.redisClient = redisClient;
-    this.sub = redisClient.duplicate();
-    this.pub = redisClient.duplicate();
+    if (redisClient) {
+      this.redisClient = redisClient;
+      this.sub = redisClient.duplicate();
+      this.pub = redisClient.duplicate();
+    }
 
     if (!this.hasRedis) {
       this.updates = [];

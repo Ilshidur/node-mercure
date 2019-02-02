@@ -16,7 +16,6 @@ const server = new Server({
 });
 
 (async () => {
-
   await server.listen(3000);
 
   // === TEST ===
@@ -36,15 +35,15 @@ const server = new Server({
   });
 
   console.log('Using encryption ...');
-  await publisher.useEncryption({
-    rsaPrivateKey: (await util.promisify(crypto.generateKeyPair)('rsa', {
-      modulusLength: 4096,
-      privateKeyEncoding: {
-        type: 'pkcs8',
-        format: 'pem',
-      },
-    })).privateKey,
-  });
+  // await publisher.useEncryption({
+  //   rsaPrivateKey: (await util.promisify(crypto.generateKeyPair)('rsa', {
+  //     modulusLength: 4096,
+  //     privateKeyEncoding: {
+  //       type: 'pkcs8',
+  //       format: 'pem',
+  //     },
+  //   })).privateKey,
+  // });
   console.log('Generated keys !');
 
   server.hub.on('subscribe', (subscriber) => {
@@ -65,7 +64,7 @@ const server = new Server({
     }
 
     const data = {
-      '@id': 'http://localhost:3000/books/666.jsonld' // TODO: Using JSON-LD
+      '@id': 'http://localhost:3000/books/666.jsonld',
     };
 
     const updateId = await publisher.publish(

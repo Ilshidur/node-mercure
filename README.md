@@ -8,14 +8,13 @@ TODO: README badges
 
 * Separate the unique JWT to 2 JWTs (publisher & subscriber)
 * Logging
-* HTTPS support
-* History database
-* Scalability
+* Scalability (connections across multiple node instances)
 * Unit tests
 
 ## Requirements
 
-* node.js >= 11.7.0
+* node.js **>= 11.7.0**
+* Redis (optional)
 
 ## Features
 
@@ -82,6 +81,20 @@ const server = new Server({
 server.listen(3000);
 ```
 
+Because the Server is leverages Express, it is possible to add middlewares in front of the internal Hub middleware :
+
+```javascript
+const compression = require('compression');
+
+class SecuredHubServer extends Server {
+  configure() {
+    app.use(compression());
+  }
+}
+
+const server = new SecuredHubServer(...);
+```
+
 ### Publisher
 
 It can be created in different ways :
@@ -120,7 +133,7 @@ await publisher.publish(
 
 ## API
 
-TODO:
+TODO: API documentation
 
 ## Encrypting the datas
 
@@ -129,15 +142,26 @@ In certain cases, the Mercure hub can be hosted by a third-party host. You don't
 To achieve this, the `Publisher#useEncryption()` method will activate messages encryption. Thus, the Hub will not be able to access your private datas :
 
 ```javascript
+const crypto = require('crypto');
+const util = require('util');
+
 const publisher = new Publisher({
   // ...
 });
 
 const data = { message: 'TOP SECRET DATAS' };
+const { privateKey } = await util.promisify(crypto.generateKeyPair)('rsa', {
+  modulusLength: 4096,
+  privateKeyEncoding: {
+    type: 'pkcs8',
+    format: 'pem',
+  },
+});
 
 // Start encrypting the events.
-// TODO: Config to pass to the method.
-await publisher.useEncryption({});
+await publisher.useEncryption({
+  rsaPrivateKey: privateKey,
+});
 
 // Will send encrypted datas.
 await publisher.publish(
@@ -159,7 +183,15 @@ console.log(decrypted.plaintext.toString());
 
 ## Kill switch
 
-TODO:
+In case the hub must urgently close all connections (e.g.: in case of compromission of the JWT key), a kill switch is available.
+The function `Hub#killSwitch()` takes no argument and is (volontary) synchronous. It will :
+
+* generate a new JWT key
+* close all subscribers' open connections, except the ones from subscribers who have full subscription rights to the hub
+
+```javascript
+hub.killSwitch();
+```
 
 ## License
 

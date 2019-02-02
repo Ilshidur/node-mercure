@@ -16,7 +16,10 @@ class Server {
     };
     this.app = express();
 
-    // TODO: Use security middlewares
+    if (typeof this.configure === 'function') {
+      this.configure.call(this);
+    }
+
     this.app.use(express.urlencoded({ extended: true }));
 
     const { server, hub } = Server.createFromExpressApp(this.app, this.config);
@@ -27,7 +30,6 @@ class Server {
   static createFromExpressApp(app, config) {
     app.post('/hub', Server.publishEndpointHandler(app));
 
-    // TODO: Use https
     const server = http.Server(app);
 
     const hub = new Hub(server, config);
@@ -38,7 +40,6 @@ class Server {
 
   static publishEndpointHandler(app) {
     return async (req, res) => {
-      // TODO: Mitigate CSRFs
       const hub = app.get('hub');
 
       // Authorize publisher
@@ -96,10 +97,8 @@ class Server {
     };
   }
 
-  // TODO: Pass addr
-  async listen(port) {
-    this.server.listen(port);
-    await this.hub.listen();
+  async listen(port, addr = null) {
+    await this.hub.listen(port, addr);
   }
 
   generatePublishJwt(...args) {
