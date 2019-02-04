@@ -6,9 +6,7 @@ TODO: README badges
 
 ## TODOs
 
-* Separate the unique JWT to 2 JWTs (publisher & subscriber)
 * Logging
-* Scalability (connections across multiple node instances)
 * Unit tests
 * Find a way to clear Redis if the process gets interrupted
 

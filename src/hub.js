@@ -40,8 +40,8 @@ class Hub extends EventEmitter {
       ...config || (typeof server.listen !== 'function' ? server : {})
     };
 
-    if (!this.config.jwtKey) {
-      throw new Error('Missing "jwtKey" option.');
+    if (!this.config.jwtKey && (!this.config.pubJwtKey || !this.config.subJwtKey)) {
+      throw new Error('Missing "jwtKey" or "pubJwtKey"/"subJwtKey" option.');
     }
 
     this.server = typeof server.listen === 'function' ? server : createHttpServer();
@@ -59,8 +59,11 @@ class Hub extends EventEmitter {
     return true;
   }
 
-  authorize(req) {
-    return authorize(req, this.config.jwtKey, this.config.publishAllowedOrigins);
+  authorizePublish(req) {
+    return authorize(req, this.config.pubJwtKey || this.config.jwtKey, this.config.publishAllowedOrigins);
+  }
+  authorizeSubscribe(req) {
+    return authorize(req, this.config.subJwtKey || this.config.jwtKey, this.config.publishAllowedOrigins);
   }
 
   async listen(port, addr = null) {
@@ -97,7 +100,7 @@ class Hub extends EventEmitter {
       // Check the allowed topics in the subscriber's JWT.
       let claims;
       try {
-        claims = await this.authorize(client.req, null);
+        claims = await this.authorizeSubscribe(client.req);
       } catch (err) {
         client.res.writeHead(401);
         client.res.write('Unauthorized');
@@ -197,27 +200,29 @@ class Hub extends EventEmitter {
     return updateId;
   }
 
-  generateJwt(claims = {}) {
+  generateJwt(claims = {}, key) {
     return util.promisify(jwt.sign)({
       mercure: claims,
-    }, this.config.jwtKey);
+    }, key || this.config.jwtKey);
   }
 
   generatePublishJwt(targets = []) {
     return this.generateJwt({
       publish: targets,
-    });
+    }, this.config.pubJwtKey);
   }
 
   generateSubscribeJwt(targets = []) {
     return this.generateJwt({
       subscribe: targets,
-    });
+    }, this.config.subJwtKey);
   }
 
-  // In case of compromission of the JWT key.
+  // In case of compromission of the JWT key(s).
   async changeJwtKey(jwtKey) {
     this.config.jwtKey = jwtKey;
+    this.config.pubJwtKey = null;
+    this.config.subJwtKey = null;
 
     // Force re-authentication on subscribers that can only
     // subscribe to certain topics.
