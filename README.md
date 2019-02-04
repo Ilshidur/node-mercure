@@ -89,7 +89,7 @@ const compression = require('compression');
 
 class SecuredHubServer extends Server {
   configure() {
-    app.use(compression());
+    this.app.use(compression());
   }
 }
 
