@@ -12,8 +12,10 @@ const Subscriber = require('./subscriber');
 const Update = require('./update');
 const History = require('./history');
 const { createRedisClient } = require('./redis');
+const SubscribersStore = require('./subscribers_store');
 
 const defaultOptions = {
+  id: uuidv4(),
   path: '/hub',
   allowAnonymous: false, // Don't force subscriber authorization.
   maxTopics: 0,
@@ -30,26 +32,26 @@ function createHttpServer() {
 
 // One Hub per server, thus one per publisher.
 class Hub extends EventEmitter {
-  constructor(server, options) {
+  constructor(server, config) {
     super();
 
-    this.options = {
+    this.config = {
       ...defaultOptions,
-      ...options || (typeof server.listen !== 'function' ? server : {})
+      ...config || (typeof server.listen !== 'function' ? server : {})
     };
 
-    if (!this.options.jwtKey) {
+    if (!this.config.jwtKey) {
       throw new Error('Missing "jwtKey" option.');
     }
 
     this.server = typeof server.listen === 'function' ? server : createHttpServer();
 
     this.redis = null;
-    if (this.options.redis) {
-      this.redis = createRedisClient(this.options.redis);
+    if (this.config.redis) {
+      this.redis = createRedisClient(this.config.redis);
     }
 
-    this.subscribers = new Set(); // TODO: Store in Redis
+    this.subscribers = new SubscribersStore(this.config.id, this.redis);
     this.history = new History(this.redis);
   }
 
@@ -57,12 +59,8 @@ class Hub extends EventEmitter {
     return true;
   }
 
-  getSubscribersCount() {
-    return this.subscribers.size;
-  }
-
   authorize(req) {
-    return authorize(req, this.options.jwtKey, this.options.publishAllowedOrigins);
+    return authorize(req, this.config.jwtKey, this.config.publishAllowedOrigins);
   }
 
   async listen(port, addr = null) {
@@ -76,12 +74,12 @@ class Hub extends EventEmitter {
 
     // TODO: Try to NOT immediately set the headers.
     const sse = new SSE(this.server, {
-      path: this.options.path,
+      path: this.config.path,
       verifyRequest: (req) => req.url.startsWith('/hub') && (req.method === 'GET' || req.method === 'HEAD')
     });
 
     this.history.on('update', (update) => {
-      const subscribers = Array.from(this.subscribers).filter(subscriber => subscriber.canReceive(update))
+      const subscribers = this.subscribers.getList().filter(subscriber => subscriber.canReceive(update))
 
       // TODO: Send event to subscribers in ONE TIME.
       for (const subscriber of subscribers) {
@@ -90,7 +88,7 @@ class Hub extends EventEmitter {
 
       this.emit('publish', update, update.event.id);
 
-      // TODO: options.retry
+      // TODO: config.retry
     });
 
     await this.history.start();
@@ -107,7 +105,7 @@ class Hub extends EventEmitter {
         return;
       }
 
-      if (!claims && !this.options.allowAnonymous) {
+      if (!claims && !this.config.allowAnonymous) {
         client.res.writeHead(403);
         client.res.write('Forbidden');
         client.res.end();
@@ -121,9 +119,10 @@ class Hub extends EventEmitter {
         return;
       }
 
-      if (this.options.maxTopics > 0 && topics.length > this.options.maxTopics) {
+      const topicsArray = Array.isArray(topics) ? topics : [topics];
+      if (this.config.maxTopics > 0 && topicsArray.length > this.config.maxTopics) {
         client.res.writeHead(400);
-        client.res.write(`Exceeded limit of ${this.options.maxTopics} topics`);
+        client.res.write(`Exceeded limit of ${this.config.maxTopics} topics`);
         client.res.end();
         return;
       }
@@ -132,8 +131,8 @@ class Hub extends EventEmitter {
       initializeClient.call(client);
 
       const templates = [];
-      if (topics.length > 0) {
-        for (const topic of topics) {
+      if (topicsArray.length > 0) {
+        for (const topic of topicsArray) {
           try {
             templates.push(uriTemplates(topic));
           } catch (err) {
@@ -151,9 +150,9 @@ class Hub extends EventEmitter {
       const lastEventId = client.req.headers['last-event-id']
       const subscriber = new Subscriber(client, allTargetsAuthorized, authorizedTargets, templates, lastEventId);
 
-      this.subscribers.add(subscriber);
-      client.on('close', () => {
-        this.subscribers.delete(subscriber);
+      await this.subscribers.add(subscriber);
+      client.on('close', async () => {
+        await this.subscribers.delete(subscriber);
         this.emit('unsubscribe', subscriber);
       });
 
@@ -172,14 +171,14 @@ class Hub extends EventEmitter {
     }
   }
 
-  async dispatchUpdate(topics, data, options = {}) {
-    let updateId = options.id;
-    if (!updateId || this.options.ignorePublisherId) {
+  async dispatchUpdate(topics, data, config = {}) {
+    let updateId = config.id;
+    if (!updateId || this.config.ignorePublisherId) {
       updateId = uuidv4();
     }
 
-    let targets = options.targets || []
-    if (options.allTargets) {
+    let targets = config.targets || []
+    if (config.allTargets) {
       targets = null
     }
 
@@ -189,8 +188,8 @@ class Hub extends EventEmitter {
     const update = new Update(targets, topicsArray, {
       data,
       id: updateId,
-      type: options.type || 'message',
-      retry: Number(options.retry) || 0,
+      type: config.type || 'message',
+      retry: Number(config.retry) || 0,
     });
 
     await this.history.push(update);
@@ -201,7 +200,7 @@ class Hub extends EventEmitter {
   generateJwt(claims = {}) {
     return util.promisify(jwt.sign)({
       mercure: claims,
-    }, this.options.jwtKey);
+    }, this.config.jwtKey);
   }
 
   generatePublishJwt(targets = []) {
@@ -217,41 +216,42 @@ class Hub extends EventEmitter {
   }
 
   // In case of compromission of the JWT key.
-  changeJwtKey(jwtKey) {
-    this.options.jwtKey = jwtKey;
+  async changeJwtKey(jwtKey) {
+    this.config.jwtKey = jwtKey;
 
     // Force re-authentication on subscribers that can only
     // subscribe to certain topics.
-    for (const subscriber of this.subscribers) {
-      if (!subscriber.allTargetsAuthorized) {
-        subscriber.closeConnection();
-      }
-    }
+    await this.subscribers.clear(false);
   }
 
   // Generates random 256 bytes JWT and outputs it in the console.
-  killSwitch() {
+  async killSwitch() {
     const buffer = crypto.randomBytes(256); // Using sync function on purpose.
     const jwtKey = buffer.toString('hex');
     console.log(`====================================\n\n\tNEW JWT KEY :\n\n${jwtKey}\n\n====================================`);
-    this.changeJwtKey(jwtKey);
+    await this.changeJwtKey(jwtKey);
   }
 
   async end({ force = false } = {}) {
     if (!force) {
-      for (const subscriber of this.subscribers) {
-        subscriber.closeConnection();
-      }
+      await this.subscribers.clear(true);
     }
 
     if (force) {
-      this.redis.end();
+      this.redis.end(false);
     } else {
       await this.redis.quitAsync();
     }
 
     await this.history.end({ force });
     await this.server.close();
+  }
+
+  endSync() {
+    this.subscribers.clearSync();
+    this.history.endSync();
+    this.redis.end(false);
+    // Server connections will be interrupted.
   }
 }
 

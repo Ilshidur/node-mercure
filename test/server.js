@@ -15,6 +15,15 @@ const server = new Server({
   },
 });
 
+process.on('SIGTERM', async () => {
+  console.log('Ending server ...');
+  await server.endSync();
+});
+process.on('SIGINT', async () => {
+  console.log('Ending server ...');
+  await server.endSync();
+});
+
 (async () => {
   await server.listen(3000);
 
@@ -59,7 +68,10 @@ const server = new Server({
   });
 
   setInterval(async () => {
-    if (server.hub.getSubscribersCount() === 0) {
+    if (await server.hub.subscribers.getTotalCount() === 0) {
+      return;
+    }
+    if (process.env.pm_id && process.env.pm_id !== '0') {
       return;
     }
 

@@ -62,8 +62,8 @@ class Server {
         return res.status(400).send('Missing "data" parameter in body');
       }
 
-      if (hub.options.maxTopics > 0 && topics.length > hub.options.maxTopics) {
-        return res.status(400).send(`Exceeded limit of ${hub.options.maxTopics} topics`);
+      if (hub.config.maxTopics > 0 && topics.length > hub.config.maxTopics) {
+        return res.status(400).send(`Exceeded limit of ${hub.config.maxTopics} topics`);
       }
 
       // TODO: retry
@@ -111,6 +111,10 @@ class Server {
 
   async end({ force = false } = {}) {
     await this.hub.end({ force });
+  }
+
+  endSync() {
+    return this.hub.endSync();
   }
 }
 

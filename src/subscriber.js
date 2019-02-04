@@ -7,6 +7,16 @@ class Subscriber {
     this.lastEventId = lastEventId;
   }
 
+  toValue() {
+    return {
+      topics: this.topics.map(t => t.toString()),
+      ip: this.sseClient.req.socket.localAddress,
+      all: this.allTargetsAuthorized,
+      last: this.lastEventId,
+      authorized: this.authorizedTargets
+    }
+  }
+
   send(update) {
     this.sseClient.send(update.event);
   }

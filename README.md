@@ -10,6 +10,7 @@ TODO: README badges
 * Logging
 * Scalability (connections across multiple node instances)
 * Unit tests
+* Find a way to clear Redis if the process gets interrupted
 
 ## Requirements
 
@@ -21,6 +22,8 @@ TODO: README badges
 * 100% implementation of the protocol
 * Events asymmetric encryption
 * Easy integration to any existing app using `http.Server` or `express`
+* Redis-based clustering support
+* Inventory of all open connections stored in Redis, per node process
 * Kill switch
 
 ## Usage
@@ -184,13 +187,13 @@ console.log(decrypted.plaintext.toString());
 ## Kill switch
 
 In case the hub must urgently close all connections (e.g.: in case of compromission of the JWT key), a kill switch is available.
-The function `Hub#killSwitch()` takes no argument and is (volontary) synchronous. It will :
+The function `Hub#killSwitch()` takes no argument and is asynchronous. It will :
 
 * generate a new JWT key
 * close all subscribers' open connections, except the ones from subscribers who have full subscription rights to the hub
 
 ```javascript
-hub.killSwitch();
+await hub.killSwitch();
 ```
 
 ## License

@@ -76,12 +76,20 @@ class History extends EventEmitter {
   async end({ force = false } = {}) {
     if (this.hasRedis) {
       if (force) {
-        this.pub.end();
-        this.sub.end();
+        this.pub.end(false);
+        this.sub.end(false);
       } else {
         await this.pub.quitAsync();
         await this.sub.quitAsync();
       }
+    }
+    this.running = false;
+  }
+
+  endSync() {
+    if (this.hasRedis) {
+      this.pub.end(false);
+      this.sub.end(false);
     }
     this.running = false;
   }
