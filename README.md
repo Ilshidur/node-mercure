@@ -9,6 +9,7 @@ TODO: README badges
 * Logging
 * Unit tests
 * Find a way to clear Redis if the process gets interrupted
+* Benchmarks
 
 ## Requirements
 
