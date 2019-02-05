@@ -21,6 +21,10 @@ class Subscriber {
     this.sseClient.send(update.event);
   }
 
+  async sendAsync(update) {
+    this.sseClient.send(update.event);
+  }
+
   closeConnection() {
     // Ends the response.
     this.sseClient.close();

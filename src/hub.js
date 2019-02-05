@@ -81,12 +81,11 @@ class Hub extends EventEmitter {
       verifyRequest: (req) => req.url.startsWith('/hub') && (req.method === 'GET' || req.method === 'HEAD')
     });
 
-    this.history.on('update', (update) => {
+    this.history.on('update', async (update) => {
       const subscribers = this.subscribers.getList().filter(subscriber => subscriber.canReceive(update))
 
-      // TODO: Send event to subscribers in ONE TIME.
       for (const subscriber of subscribers) {
-        subscriber.send(update);
+        subscriber.sendAsync(update);
       }
 
       this.emit('publish', update, update.event.id);
