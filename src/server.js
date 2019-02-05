@@ -39,7 +39,7 @@ class Server {
   }
 
   static publishEndpointHandler(app) {
-    return async (req, res) => {
+    return async (req, res, next) => {
       const hub = app.get('hub');
 
       // Authorize publisher
@@ -53,7 +53,8 @@ class Server {
         return res.status(403).send('Forbidden');
       }
 
-      const { topic, data, target: targets, id, type, retry } = req.body;
+      const { topic, data, target: targets, id, type } = req.body;
+      let { retry } = req.body;
 
       if (!topic || topic === '') {
         return res.status(400).send('Missing "topic" parameter in body');
@@ -67,9 +68,9 @@ class Server {
       }
 
       if (retry) {
-        retry = retry || 0;
+        retry = parseInt(retry, 10) || 0;
 
-        if (!_.isInteger(retry)) {
+        if (!Number.isInteger(retry)) {
           return res.status(400).send('Invalid "retry" parameter');
         }
       }
@@ -88,15 +89,20 @@ class Server {
       }
 
       const publisher = new Publisher(hub);
-      const updateId = await publisher.publish(topic, data, {
-        allTargets: allTargetsAuthorized,
-        targets,
-        ...id ? { id } : {},
-        ...type ? { type } : {},
-        ...retry ? { retry } : {},
-      });
 
-      return res.status(200).send(updateId);
+      try {
+        const updateId = await publisher.publish(topic, data, {
+          allTargets: allTargetsAuthorized,
+          targets,
+          ...id ? { id } : {},
+          ...type ? { type } : {},
+          ...retry ? { retry } : {},
+        });
+
+        return res.status(200).send(updateId);
+      } catch (err) {
+        return next(err);
+      }
     };
   }
 
