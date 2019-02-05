@@ -15,13 +15,13 @@ const server = new Server({
   },
 });
 
-process.on('SIGTERM', async () => {
+process.on('SIGTERM', () => {
   console.log('Ending server ...');
-  await server.endSync();
+  server.endSync();
 });
-process.on('SIGINT', async () => {
+process.on('SIGINT', () => {
   console.log('Ending server ...');
-  await server.endSync();
+  server.endSync();
 });
 
 (async () => {
