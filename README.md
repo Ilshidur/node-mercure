@@ -26,7 +26,7 @@ TODO: README badges
 
 ## Usage
 
-This librairy provides 3 components : a `Hub`, a `Server` and a `Publisher` :
+This library provides 3 components : a `Hub`, a `Server` and a `Publisher` :
 
 TODO: image
 
