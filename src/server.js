@@ -66,10 +66,13 @@ class Server {
         return res.status(400).send(`Exceeded limit of ${hub.config.maxTopics} topics`);
       }
 
-      // TODO: retry
-      // TODO: Validate type
+      if (retry) {
+        retry = retry || 0;
 
-      // TODO: Validate input
+        if (!_.isInteger(retry)) {
+          return res.status(400).send('Invalid "retry" parameter');
+        }
+      }
 
       const { allTargetsAuthorized, authorizedTargets } = getAuthorizedTargets(claims, true);
 
