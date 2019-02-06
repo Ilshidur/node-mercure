@@ -55,11 +55,45 @@ Sends an update to the subscribers. Only the subscribers watching the correspond
   * `type` (`String`, *defaults to `'message'`*) : the event message type.
   * `retry` (`Number`, *defaults to `0`*) : the subscriber's reconnection time.
 
-### `Hub#generateJwt(claims, key)` -> `Promise<String>`
+**Returns :** a `Promise` resolving with the update ID when the update has been dispatched.
+
+### `Hub#generateJwt(claims)` -> `Promise<String>`
+
+Generates a JWT using the stored JSON Web Token key. This JWT contains the targets the subscriber is allowed to get updates about.
+
+=> [Example on jwt.io](https://jwt.io/#debugger-io?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZXJjdXJlIjp7InN1YnNjcmliZSI6WyJmb28iLCJiYXIiXSwicHVibGlzaCI6WyJmb28iXX19.LRLvirgONK13JgacQ_VbcjySbVhkSmHy3IznH3tA9PM)
+
+**Arguments :**
+
+* `claims` (`Object`, **required**) :
+  * `publish`: (`Array<String>`, *optional*) : targets that the client can publish to.
+  * `subscribe`: (`Array<String>`, *optional*) : targets that the client can subscribe to.
+
+**Returns :** a `Promise` resolving a `String` containing the JWT.
 
 ### `Hub#generatePublishJwt(targets)` -> `Promise<String>`
 
+Generates a JWT using the stored JSON Web Token key. This JWT only contains permissions to **publish** on the given targets.
+
+=> [Example on jwt.io](https://jwt.io/#debugger-io?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZXJjdXJlIjp7InB1Ymxpc2giOlsiZm9vIl19fQ.weCGCnFpami1oNG9nflP7jb3-d1G8uSv8vd3yGjDBDU)
+
+**Arguments :**
+
+* `targets`: (`Array<String>`, *optional*) : targets that the client can publish to.
+
+**Returns :** a `Promise` resolving a `String` containing the JWT.
+
 ### `Hub#generateSubscribeJwt(targets)` -> `Promise<String>`
+
+Generates a JWT using the stored JSON Web Token key. This JWT only contains permissions to **subscribe** on the given targets.
+
+=> [Example on jwt.io](https://jwt.io/#debugger-io?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZXJjdXJlIjp7InN1YnNjcmliZSI6WyJmb28iLCJiYXIiXX19.DNa7vHxKE-l_NBc1a_JrfLPDjq0rG1_gAOZMBeC3xh0)
+
+**Arguments :**
+
+* `targets`: (`Array<String>`, *optional*) : targets that the client can subscribe to.
+
+**Returns :** a `Promise` resolving a `String` containing the JWT.
 
 ### `Hub#authorizePublish(req)` -> `Promise<Object>`
 
