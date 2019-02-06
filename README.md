@@ -7,6 +7,8 @@ TODO: README badges
 ## TODOs
 
 * **CORS**
+* Publisher#getClaims()
+* Export authorization.js mechanism
 * Discovery helpers
 * JSDoc
 * Logging
