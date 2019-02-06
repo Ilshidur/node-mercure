@@ -4,20 +4,55 @@ const jose = require('node-jose');
 const util = require('util');
 const querystring = require('querystring');
 
+const { isJwt } = require('./util');
+
 class Publisher {
   constructor(config = {}) {
     if (config.isMercureHub) {
       this.hub = config;
     } else {
-      // TODO: Check protocol, host, port, path, jwt.
       this.config = config;
+
+      // Required configurations
+      if (!this.config.host) {
+        throw new Error('Missing host');
+      }
+      if (!this.config.jwt) {
+        throw new Error('Missing jwt');
+      }
+
+      // Defaults
+      if (!this.config.protocol) {
+        this.config.protocol = 'https';
+      }
+      if (!this.config.port) {
+        this.config.port = 80;
+      }
+      if (!this.config.path) {
+        this.config.path = '/hub';
+      }
+
+      // Validations
+      if (!['http', 'https'].includes(this.config.protocol)) {
+        throw new Error('Invalid protocol', this.config.protocol);
+      }
+      if (!Number.isInteger(this.config.port)) {
+        throw new Error('Invalid port', this.config.port);
+      }
+      if (!this.config.path.startsWith('/')) {
+        throw new Error('Path must start with "/"');
+      }
+      if (!isJwt(this.config.jwt)) {
+        throw new Error('Invalid jwt', this.config.jwt);
+      }
     }
   }
 
   // Will encrypt each POST message between the publisher and the Mercure server.
   async useEncryption({
-    rsaPrivateKey = null
+    rsaPrivateKey = null,
     // TODO: Support jwks
+    passphrase = null
     // TODO: Support RSA key passphrase
   } = {}) {
     if (this.hub) {
@@ -89,14 +124,22 @@ class Publisher {
         ...options.type ? { type: options.type }: {},
         ...options.retry ? { retry: options.retry }: {},
       };
-      const response = await axios.post(url, querystring.stringify(data), {
-        headers: {
-          'Authorization': `Bearer ${this.config.jwt}`,
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      });
 
-      return response.data;
+      try {
+        const response = await axios.post(url, querystring.stringify(data), {
+          headers: {
+            'Authorization': `Bearer ${this.config.jwt}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        });
+
+        return response.data;
+      } catch (err) {
+        if (err.response) {
+          throw new Error(`${err.response.status} ${err.response.statusText} : ${err.response.data}`);
+        }
+        throw err;
+      }
     }
   }
 }
