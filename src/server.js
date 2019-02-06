@@ -110,14 +110,6 @@ class Server {
     await this.hub.listen(port, addr);
   }
 
-  generatePublishJwt(...args) {
-    return this.hub.generatePublishJwt(...args);
-  }
-
-  generateSubscribeJwt(...args) {
-    return this.hub.generateSubscribeJwt(...args);
-  }
-
   async end({ force = false } = {}) {
     await this.hub.end({ force });
   }

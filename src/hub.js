@@ -158,16 +158,12 @@ class Hub extends EventEmitter {
       this.emit('subscribe', subscriber);
 
       if (subscriber.lastEventId) {
-        await this.sendMissedEvents(subscriber);
+        const updates = await this.history.findFor(subscriber);
+        for (const update of updates) {
+          subscriber.send(update);
+        }
       }
     });
-  }
-
-  async sendMissedEvents(subscriber) {
-    const updates = await this.history.findFor(subscriber);
-    for (const update of updates) {
-      subscriber.send(update);
-    }
   }
 
   async dispatchUpdate(topics, data, config = {}) {
@@ -196,7 +192,7 @@ class Hub extends EventEmitter {
     return updateId;
   }
 
-  generateJwt(claims = {}, key) {
+  generateJwt(claims = {}, key = null) {
     return util.promisify(jwt.sign)({
       mercure: claims,
     }, key || this.config.jwtKey);

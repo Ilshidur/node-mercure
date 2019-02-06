@@ -34,7 +34,7 @@ process.on('SIGINT', () => {
 
   // const publisher = new Publisher(server.hub);
 
-  const jwt = await server.generatePublishJwt(['http://localhost:3000/books/{id}']);
+  const jwt = await server.hub.generatePublishJwt(['http://localhost:3000/books/{id}']);
   const publisher = new Publisher({
     protocol: 'http', // or 'https'
     host: 'localhost',

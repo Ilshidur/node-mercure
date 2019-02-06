@@ -89,16 +89,14 @@ class Publisher {
       }
 
       const privateJwk = await jose.JWK.asKey(rsaPrivateKey, 'pem');
-      const jwks = {
+      this.keystore = await jose.JWK.asKeyStore({
         keys: [privateJwk],
-      };
-      this.keystore = await jose.JWK.asKeyStore(jwks);
+      });
       this.kid = privateJwk.kid;
 
       return {
         rsaPrivateKey,
         rsaPublicKey,
-        jwks,
       };
     }
   }
