@@ -1,6 +1,7 @@
 # API documentation
 
 TODO: API documentation
+TODO: Summary section
 
 ![Classes preview](classes-preview.jpg "Classes preview")
 
