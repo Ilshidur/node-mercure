@@ -26,9 +26,7 @@ const defaultOptions = {
 const initializeClient = SSE.Client.prototype.initialize;
 SSE.Client.prototype.initialize = () => {}; // Noop this in order to defer the client initialization.
 
-function createHttpServer() {
-  return http.createServer();
-}
+// TODO: Handle CORS
 
 // One Hub per server, thus one per publisher.
 class Hub extends EventEmitter {
@@ -43,8 +41,11 @@ class Hub extends EventEmitter {
     if (!this.config.jwtKey && (!this.config.pubJwtKey || !this.config.subJwtKey)) {
       throw new Error('Missing "jwtKey" or "pubJwtKey"/"subJwtKey" option.');
     }
+    if (this.config.jwtKey && (this.config.pubJwtKey || this.config.subJwtKey)) {
+      throw new Error('"jwtKey" and "pubJwtKey"/"subJwtKey" cannot be passed in the same time.');
+    }
 
-    this.server = typeof server.listen === 'function' ? server : createHttpServer();
+    this.server = typeof server.listen === 'function' ? server : http.createServer();
 
     this.redis = null;
     if (this.config.redis) {
