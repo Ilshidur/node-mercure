@@ -33,7 +33,7 @@ TODO: README badges
 
 This library provides 3 components : a `Hub`, a `Server` and a `Publisher` :
 
-TODO: image
+![Classes preview](classes-preview.jpg "Classes preview")
 
 ### Simple hub
 
@@ -139,7 +139,7 @@ await publisher.publish(
 
 ## API
 
-TODO: API documentation
+API docs can be found [in the API.md file](API.md).
 
 ## Encrypting the datas
 
