@@ -2,9 +2,26 @@
 
 TODO: API documentation
 
+![Classes preview](classes-preview.jpg "Classes preview")
+
 ## Hub
 
 ### `Hub#constructor(server, config)` -> `Hub`
+
+**Arguments :**
+
+* `server` ([`http.Server`](https://nodejs.org/api/http.html#http_class_http_server), *optional*) : a native `http.Server` instance. If not passed, the hub will create one.
+* `config` (`Object`, *optional*) :
+  * `id` (`String`, *optional*) : a unique ID identifying this instance amongst a full instances cluster.
+  * `jwtKey` (`String`, **required**) : the publisher's AND subscriber's JSON Web Token key. Throws if either `pubJwtKey` or `subJwtKey` are passed.
+  * `pubJwtKey` (`String`, **required**) : the publisher's jwt key. Throws if `jwtKey` is also passed.
+  * `subJwtKey` (`String`, **required**) : the subscriber's jwt key. Throws if `jwtKey` is also passed.
+  * `path` (`String`, *defaults to `'/hub'`*) : the hub's route.
+  * `allowAnonymous` (`Boolean`, *defaults to `false`*) : set to `true` to allow subscribers with no valid JWT to connect.
+  * `maxTopics` (`Number`, *defaults to `0`*) : maximum topics count the subscribers can subscribe to. `0` means no limit.
+  * `ignorePublisherId` (`Boolean`, *defaults to `true`*) : set to `false` to accept the event ID by the publisher instead of creating a new one.
+  * `publishAllowedOrigins` (`Array<String>`, *defaults to `[]`*) : a list of origins allowed to publish (only applicable when using cookie-based auth).
+  * `redis` (`Object`, *optional*) : if defined, the Hub will connect to a Redis instance and use it to store the events and scale across multiple instances. This option is directly passed to the `redis.createInstance()` method of the [`redis`](https://www.npmjs.com/package/redis) npm module.
 
 ### `Hub#listen(port, addr)` -> `Promise<void>`
 
