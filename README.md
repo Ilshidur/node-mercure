@@ -6,6 +6,7 @@ TODO: README badges
 
 ## TODOs
 
+* JSDoc
 * Logging
 * Unit tests
 * Find a way to clear Redis if the process gets interrupted
