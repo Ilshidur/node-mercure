@@ -25,6 +25,10 @@ TODO: README badges
 * Inventory of all open connections stored in Redis, per node process
 * Kill switch
 
+## Future improvements
+
+* Implement as a lambda function ?
+
 ## Usage
 
 This library provides 3 components : a `Hub`, a `Server` and a `Publisher` :
