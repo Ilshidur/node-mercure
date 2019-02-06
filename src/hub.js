@@ -95,7 +95,7 @@ class Hub extends EventEmitter {
 
     await this.history.start();
 
-    sse.on('connection', async (client, { topic: topics }) => {
+    sse.on('connection', async (client, { topic: topics, 'Last-Event-ID': queryLastEventId }) => {
       // Check the allowed topics in the subscriber's JWT.
       let claims;
       try {
@@ -149,7 +149,7 @@ class Hub extends EventEmitter {
 
       const { allTargetsAuthorized, authorizedTargets } = getAuthorizedTargets(claims, false);
 
-      const lastEventId = client.req.headers['last-event-id']
+      const lastEventId = client.req.headers['last-event-id'] || queryLastEventId;
       const subscriber = new Subscriber(client, allTargetsAuthorized, authorizedTargets, templates, lastEventId);
 
       await this.subscribers.add(subscriber);
