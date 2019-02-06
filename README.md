@@ -6,6 +6,7 @@ TODO: README badges
 
 ## TODOs
 
+* **CORS**
 * JSDoc
 * Logging
 * Unit tests
