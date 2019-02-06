@@ -89,8 +89,6 @@ class Hub extends EventEmitter {
       }
 
       this.emit('publish', update, update.event.id);
-
-      // TODO: config.retry
     });
 
     await this.history.start();
