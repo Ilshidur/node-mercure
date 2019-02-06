@@ -78,7 +78,7 @@ class Hub extends EventEmitter {
     // TODO: Try to NOT immediately set the headers.
     const sse = new SSE(this.server, {
       path: this.config.path,
-      verifyRequest: (req) => req.url.startsWith('/hub') && (req.method === 'GET' || req.method === 'HEAD')
+      verifyRequest: (req) => req.url.startsWith('/hub') && (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS')
     });
 
     this.history.on('update', async (update) => {
