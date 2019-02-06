@@ -67,7 +67,11 @@ class Hub extends EventEmitter {
     return authorize(req, this.config.subJwtKey || this.config.jwtKey, this.config.publishAllowedOrigins);
   }
 
-  async listen(port, addr = null) {
+  async listen(port, addr = '0.0.0.0') {
+    if (!port || !Number.isInteger(port)) {
+      throw new Error('Invalid port', port);
+    }
+
     await new Promise((resolve, reject) => {
       try {
         this.server.listen(port, addr, resolve);
@@ -167,14 +171,14 @@ class Hub extends EventEmitter {
     });
   }
 
-  async dispatchUpdate(topics, data, config = {}) {
-    let updateId = config.id;
+  async dispatchUpdate(topics, data, opts = {}) {
+    let updateId = opts.id;
     if (!updateId || this.config.ignorePublisherId) {
       updateId = uuidv4();
     }
 
-    let targets = config.targets || []
-    if (config.allTargets) {
+    let targets = opts.targets || []
+    if (opts.allTargets) {
       targets = null
     }
 
@@ -184,8 +188,8 @@ class Hub extends EventEmitter {
     const update = new Update(targets, topicsArray, {
       data,
       id: updateId,
-      type: config.type || 'message',
-      retry: Number(config.retry) || 0,
+      type: opts.type || 'message',
+      retry: Number(opts.retry) || 0,
     });
 
     await this.history.push(update);
