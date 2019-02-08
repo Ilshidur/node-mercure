@@ -98,15 +98,64 @@ Generates a JWT using the stored JSON Web Token key. This JWT only contains perm
 
 ### `Hub#authorizePublish(req)` -> `Promise<Object>`
 
+Extracts the claims from a request (header or cookie) addressed to the hub. This only extracts claims from a request sent by a **publisher**.
+
+**Arguments :**
+
+* `req` ([`http.ClientRequest`](https://nodejs.org/api/http.html#http_class_http_clientrequest)) : 
+
+**Returns :** a `Promise` resolving the claims extracted from the request's JWT.
+
 ### `Hub#authorizeSubscribe(req)` -> `Promise<Object>`
+
+Extracts the claims from a request (header or cookie) addressed to the hub. This only extracts claims from a request sent by a **subscriber**.
+
+**Arguments :**
+
+* `req` ([`http.ClientRequest`](https://nodejs.org/api/http.html#http_class_http_clientrequest)) : 
+
+**Returns :** a `Promise` resolving the claims extracted from the request's JWT.
 
 ### `Hub#end(opts)` -> `Promise<void>`
 
+Gracefully stops the hub **asynchronously**. This will close the connections to the subscribers.
+
+**Arguments :**
+
+* `opts` (`Object`, *optional*) :
+  * `force` (`Boolean`, *defaults to `false`*) : set to `true` to forcefully close all connections.
+
+**Returns :** a `Promise` resolving when the hub is stopped.
+
 ### `Hub#endSync()` -> `void`
+
+*Forcefully* stops the hub **synchronously**.
+
+**Arguments :** *(none)*
+
+**Returns :** *(void)*
 
 ### `Hub#changeJwtKey()` -> `Promise<void>`
 
+Changes the JSON Web Token key. This will close all subscribers' open connections, except the ones from subscribers who have full subscription rights to the hub.
+
+**Arguments :** *(none)*
+
+**Retusn :** a `Promise` resolving when the JWT has been changed.
+
 ### `Hub#killSwitch()` -> `Promise<void>`
+
+Will :
+
+* generate a new JWT key.
+* close all subscribers' open connections, except the ones from subscribers who have full subscription rights to the hub.
+* outputs the new JWT Key to stdout.
+
+**Use case :** in case the hub must urgently close all connections (e.g.: in case of compromission of the JWT key).
+
+**Arguments :** *(none)*
+
+**Returns :** a `Promise` resolving when the JWT has been changed.
 
 ## Server
 
