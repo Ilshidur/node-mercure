@@ -194,15 +194,13 @@ console.log(decrypted.plaintext.toString());
 
 ## Kill switch
 
-In case the hub must urgently close all connections (e.g.: in case of compromission of the JWT key), a kill switch is available.
-The function `Hub#killSwitch()` takes no argument and is asynchronous. It will :
-
-* generate a new JWT key
-* close all subscribers' open connections, except the ones from subscribers who have full subscription rights to the hub
+In case the hub must urgently close all connections (e.g.: in case of compromission of the JWT key), a kill switch is available :
 
 ```javascript
 await hub.killSwitch();
 ```
+
+The new JWT Key will be output to stdout.
 
 ## License
 
