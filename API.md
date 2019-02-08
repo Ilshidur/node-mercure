@@ -141,7 +141,7 @@ Changes the JSON Web Token key. This will close all subscribers' open connection
 
 **Arguments :** *(none)*
 
-**Retusn :** a `Promise` resolving when the JWT has been changed.
+**Returns :** a `Promise` resolving when the JWT has been changed.
 
 ### `Hub#killSwitch()` -> `Promise<void>`
 
