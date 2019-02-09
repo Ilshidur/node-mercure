@@ -161,7 +161,46 @@ Will :
 
 ### `Server#constructor(config)` -> `Server`
 
+Initializes a new Server instance. When clustering the application, it is required to connect the server to [Redis](https://redis.io) in order to leverage its pub/sub capabilities and scale across multiple hub instances.
+
+The instance does not immediately "listen". Calling the `Server#listen()` method is required.
+
+**Arguments :**
+
+*Note :* this constructor takes the same options as `Hub#constructor()`.
+
+* `server` ([`http.Server`](https://nodejs.org/api/http.html#http_class_http_server), *optional*) : a native `http.Server` instance. If not passed, the hub will create one.
+* `config` (`Object`, *optional*) :
+  * `id` (`String`, *optional*) : a unique ID identifying this instance amongst a full instances cluster.
+  * `jwtKey` (`String`, **required**) : the publisher's AND subscriber's JSON Web Token key. Throws if either `pubJwtKey` or `subJwtKey` are passed.
+  * `pubJwtKey` (`String`, **required**) : the publisher's jwt key. Throws if `jwtKey` is also passed.
+  * `subJwtKey` (`String`, **required**) : the subscriber's jwt key. Throws if `jwtKey` is also passed.
+  * `path` (`String`, *defaults to `'/hub'`*) : the hub's route.
+  * `allowAnonymous` (`Boolean`, *defaults to `false`*) : set to `true` to allow subscribers with no valid JWT to connect.
+  * `maxTopics` (`Number`, *defaults to `0`*) : maximum topics count the subscribers can subscribe to. `0` means no limit.
+  * `ignorePublisherId` (`Boolean`, *defaults to `true`*) : set to `false` to accept the event ID by the publisher instead of creating a new one.
+  * `publishAllowedOrigins` (`Array<String>`, *defaults to `[]`*) : a list of origins allowed to publish (only applicable when using cookie-based auth).
+  * `redis` (`Object`, *optional*) : if defined, the Hub will connect to a Redis instance and use it to store the events and scale across multiple instances. This option is directly passed to the `redis.createInstance()` method of the [`redis`](https://www.npmjs.com/package/redis) npm module.
+
+**Returns :** a new `Server` instance.
+
 ### static `Server#createFromExpressApp(app, config)` -> `Objet<http.Server, Hub>`
+
+Creates a `http.Server` instance and a Hub from an existing Express app. The created hub is bound to the http server.
+
+The `http.Server` instance does not immediately "listen". Calling the `http.Server#listen()` method is required.
+
+*Note :* the Hub requires data encoded to `x-form-urlencoded`, thus the Express app **MUST** use the [`express.urlencoded()` middleware](https://expressjs.com/en/api.html#express.urlencoded) beforehand, in order to parse the requests datas.
+
+**Arguments :**
+
+* `app` : the Express application.
+* `config` (`Object`) : the configuration to pass to the Hub. See `Hub#constructor()`.
+
+**Returns :** an `Object` :
+
+* `server` (`http.Server` instance) : the created http server from the Express app.
+* `hub` (`Hub` instance) : the Hub that will handle the SSE connections.
 
 ### static `Server#publishEndpointHandler()` -> `(req, res, next) => {}`
 
