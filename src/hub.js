@@ -60,6 +60,10 @@ class Hub extends EventEmitter {
     return true;
   }
 
+  hasRedis() {
+    return !!this.redis;
+  }
+
   authorizePublish(req) {
     return authorize(req, this.config.pubJwtKey || this.config.jwtKey, this.config.publishAllowedOrigins);
   }
@@ -239,10 +243,12 @@ class Hub extends EventEmitter {
       await this.subscribers.clear(true);
     }
 
-    if (force) {
-      this.redis.end(false);
-    } else {
-      await this.redis.quitAsync();
+    if (this.redis) {
+      if (force) {
+        this.redis.end(false);
+      } else {
+        await this.redis.quitAsync();
+      }
     }
 
     await this.history.end({ force });
@@ -252,7 +258,9 @@ class Hub extends EventEmitter {
   endSync() {
     this.subscribers.clearSync();
     this.history.endSync();
-    this.redis.end(false);
+    if (this.redis) {
+      this.redis.end(false);
+    }
     // Server connections will be interrupted.
   }
 }
