@@ -202,18 +202,80 @@ The `http.Server` instance does not immediately "listen". Calling the `http.Serv
 * `server` (`http.Server` instance) : the created http server from the Express app.
 * `hub` (`Hub` instance) : the Hub that will handle the SSE connections.
 
-### static `Server#publishEndpointHandler()` -> `(req, res, next) => {}`
+### `Server#listen(port, addr)` -> `Promise<void>`
 
-### `Server#listen()` -> `Promise<void>`
+Listens to incoming subscription requests. It can be stopped with the methods `Hub#end()` or `Hub#endSync()`.
+
+**Arguments :**
+
+* `port` (`Number`, **required**) : the port which the hub will listen to.
+* `addr` (`String`, *defaults to `'0.0.0.0'`*) : the listening bound address.
+
+**Returns :** a `Promise` resolving when the server has started listening.
 
 ### `Server#end(opts)` -> `Promise<void>`
 
+Gracefully stops the hub **asynchronously**. This will close the connections to the subscribers.
+
+**Arguments :**
+
+* `opts` (`Object`, *optional*) :
+  * `force` (`Boolean`, *defaults to `false`*) : set to `true` to forcefully close all connections.
+
+**Returns :** a `Promise` resolving when the hub is stopped.
+
 ### `Server#endSync()` -> `void`
+
+*Forcefully* stops the hub **synchronously**.
+
+**Arguments :** *(none)*
+
+**Returns :** *(void)*
 
 ## Publisher
 
 ### `Publisher#constructor(config || hub)` -> `Publisher`
 
+Initializes a new publisher, ready to send messages to its hub.
+
+**Arguments :**
+
+* The 1st and only argument is **required**. It is either :
+  * a `Hub` instance (for publisher that are located in the same code base as the hub).
+  * an configuration `Object` : (usually for remote publishers)
+    * `protocol` (`String`, *defaults to `'https'`*)
+    * `host` (`String`, **required**)
+    * `port` (`Number`, *defaults to `80`*)
+    * `path` (`Number`, *defaults to `'/hub'`*)
+    * `jwt` (`String`, **required**)
+
 ### `Publisher#publish(topics, message, options)` -> `Promise<String>`
 
+Sends a message to the hub. The hub will dispatch the event to the appropriate subscribers.
+
+**Arguments :**
+
+* `topics` (`Array<String> || String`, **required**) : the topics of the publication.
+* `message` (`String`, **required**) : The content to send to the subscribers.
+* `options` (`Object`, *optional*) :
+  * `targets` (`Array<String> || String`, *optional*) : the targets that will receive the update. Passing nothing will publish the update to all subscribers.
+  * `id` (`String`, *optional*) : the ID to give to the sent update. The server can discard it if it's configured to do so.
+  * `type` (`String`, *defaults to `'message'`*) : the type of the event to send to the subscribers.
+  * `retry` (`Number`, *optional*) : the reconnection cooldown  to send to the subscribers.
+  * `allTargets` (`Boolean`, *optional*) : set to `true` to dispatch the update to all subscribers. Only available when the publisher is directly linked to the Hub instance.
+
+**Returns :** a `Promise` resolving the event ID when the message has been sent to the hub.
+
 ### `Publisher#useEncryption(config)` -> `Promise<Object<String, String>>`
+
+Allows encryption of the sent update to the Hub.
+
+**Arguments :**
+
+* `config` (`Object`, **required**)
+  * `rsaPrivateKey` (`String`, *optional*) : the private RSA key that will be used to cypher the messages. If nothing is passed, the method will generate a new RSA public/private key pair.
+
+**Returns :** a `Promise` resolving an `Object` when the encryption mechanism is ready :
+
+* `rsaPrivateKey` (`String`) : the used RSA private key.
+* `rsaPublicKey` (`String`) : the public RSA key, calculated from the private RSA key.
