@@ -1,6 +1,6 @@
 # mercure
 
-Mercure Hub & Publisher implemented in Node.js.
+[Mercure](https://github.com/dunglas/mercure) Hub & Publisher implemented in Node.js.
 
 ![stability-beta](https://img.shields.io/badge/stability-beta-green.svg)
 
@@ -12,6 +12,8 @@ Mercure Hub & Publisher implemented in Node.js.
 [![Code Climate][maintainability-badge]][maintainability-url]
 
 [![NPM][npm-stats-badge]][npm-stats-url]
+
+*Note : this npm package has been **transfered** for a new project by the [initial owner](https://www.npmjs.com/~francois), which serves a totally different purpose. This new version is an implementation of the [Mercure protocol](https://github.com/dunglas/mercure). The previous `mercure` package had 1 release (`0.0.1`) and served as a file downloader. You can still access it : https://www.npmjs.com/package/mercure/v/0.0.1. Please make sure to **lock** this version in your `package.json` file, as the new versions will begin at `0.0.2` and will keep following the [semver versioning](https://semver.org).*
 
 ## TODOs
 
