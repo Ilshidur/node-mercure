@@ -50,6 +50,12 @@ This is a **beta version**. This has not fully been tested in production yet.
 
 * Implement as a lambda function ?
 
+## Installation
+
+```bash
+npm install mercure --save
+```
+
 ## Usage
 
 This library provides 3 components : a `Hub`, a `Server` and a `Publisher` :
