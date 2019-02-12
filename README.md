@@ -2,7 +2,16 @@
 
 Mercure Hub & Publisher implemented in Node.js.
 
-TODO: README badges
+![stability-beta](https://img.shields.io/badge/stability-beta-green.svg)
+
+[![npm version][version-badge]][version-url]
+[![Known Vulnerabilities][vulnerabilities-badge]][vulnerabilities-url]
+[![dependency status][dependency-badge]][dependency-url]
+[![devdependency status][devdependency-badge]][devdependency-url]
+[![downloads][downloads-badge]][downloads-url]
+[![Code Climate][maintainability-badge]][maintainability-url]
+
+[![NPM][npm-stats-badge]][npm-stats-url]
 
 ## TODOs
 
@@ -10,11 +19,16 @@ TODO: README badges
 * Publisher#getClaims()
 * Export authorization.js mechanism
 * Discovery helpers
+* Increase code quality score
 * JSDoc
 * Logging
 * Unit tests
 * Find a way to clear Redis if the process gets interrupted
 * Benchmarks
+
+## State
+
+This is a **beta version**. This has not fully been tested in production yet.
 
 ## Requirements
 
@@ -205,3 +219,18 @@ The new JWT Key will be output to stdout.
 ## License
 
 GNU GENERAL PUBLIC LICENSE v3.
+
+[version-badge]: https://img.shields.io/npm/v/mercure.svg
+[version-url]: https://www.npmjs.com/package/mercure
+[vulnerabilities-badge]: https://snyk.io/test/npm/mercure/badge.svg
+[vulnerabilities-url]: https://snyk.io/test/npm/mercure
+[dependency-badge]: https://david-dm.org/ilshidur/mercure.svg
+[dependency-url]: https://david-dm.org/ilshidur/mercure
+[devdependency-badge]: https://david-dm.org/ilshidur/mercure/dev-status.svg
+[devdependency-url]: https://david-dm.org/ilshidur/mercure#info=devDependencies
+[downloads-badge]: https://img.shields.io/npm/dt/mercure.svg
+[downloads-url]: https://www.npmjs.com/package/mercure
+[maintainability-badge]: https://api.codeclimate.com/v1/badges/92ad8661f7de98e13f0f/maintainability
+[maintainability-url]: https://codeclimate.com/github/Ilshidur/node-mercure/maintainability
+[npm-stats-badge]: https://nodei.co/npm/mercure.png?downloads=true&downloadRank=true
+[npm-stats-url]: https://nodei.co/npm/mercure
