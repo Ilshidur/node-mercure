@@ -1,9 +1,34 @@
 # API documentation
 
-TODO: API documentation
-TODO: Summary section
-
 ![Classes preview](classes-preview.jpg "Classes preview")
+
+## Table of contents
+
+- [API documentation](#api-documentation)
+  - [Table of contents](#table-of-contents)
+  - [Hub](#hub)
+    - [`Hub#constructor(server, config)` -> `Hub`](#hubconstructorserver-config---hub)
+    - [`Hub#listen(port, addr)` -> `Promise<void>`](#hublistenport-addr---promisevoid)
+    - [`Hub#dispatchUpdate(topics, data, opts)` -> `Promise<Number>`](#hubdispatchupdatetopics-data-opts---promisenumber)
+    - [`Hub#generateJwt(claims)` -> `Promise<String>`](#hubgeneratejwtclaims---promisestring)
+    - [`Hub#generatePublishJwt(targets)` -> `Promise<String>`](#hubgeneratepublishjwttargets---promisestring)
+    - [`Hub#generateSubscribeJwt(targets)` -> `Promise<String>`](#hubgeneratesubscribejwttargets---promisestring)
+    - [`Hub#authorizePublish(req)` -> `Promise<Object>`](#hubauthorizepublishreq---promiseobject)
+    - [`Hub#authorizeSubscribe(req)` -> `Promise<Object>`](#hubauthorizesubscribereq---promiseobject)
+    - [`Hub#end(opts)` -> `Promise<void>`](#hubendopts---promisevoid)
+    - [`Hub#endSync()` -> `void`](#hubendsync---void)
+    - [`Hub#changeJwtKey()` -> `Promise<void>`](#hubchangejwtkey---promisevoid)
+    - [`Hub#killSwitch()` -> `Promise<void>`](#hubkillswitch---promisevoid)
+  - [Server](#server)
+    - [`Server#constructor(config)` -> `Server`](#serverconstructorconfig---server)
+    - [static `Server#createFromExpressApp(app, config)` -> `Objet<http.Server, Hub>`](#static-servercreatefromexpressappapp-config---objethttpserver-hub)
+    - [`Server#listen(port, addr)` -> `Promise<void>`](#serverlistenport-addr---promisevoid)
+    - [`Server#end(opts)` -> `Promise<void>`](#serverendopts---promisevoid)
+    - [`Server#endSync()` -> `void`](#serverendsync---void)
+  - [Publisher](#publisher)
+    - [`Publisher#constructor(config || hub)` -> `Publisher`](#publisherconstructorconfig--hub---publisher)
+    - [`Publisher#publish(topics, message, options)` -> `Promise<String>`](#publisherpublishtopics-message-options---promisestring)
+    - [`Publisher#useEncryption(config)` -> `Promise<Object<String, String>>`](#publisheruseencryptionconfig---promiseobjectstring-string)
 
 ## Hub
 
