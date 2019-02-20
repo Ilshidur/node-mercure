@@ -21,7 +21,7 @@
     "bluebird": "^3.5.3",
     "cookie": "0.3.1",
     "express": "4.16.4",
-    "jsonwebtoken": "8.4.0",
+    "jsonwebtoken": "8.5.0",
     "node-jose": "^1.1.0",
     "redis": "^2.8.0",
     "sse": "0.0.8",
