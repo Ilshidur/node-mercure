@@ -19,6 +19,8 @@
 
 * **CORS**
 * Publisher#getClaims()
+* Docker image (iso with official image)
+* Prometheus metrics exporter
 * Export authorization.js mechanism
 * Discovery helpers
 * Increase code quality score
