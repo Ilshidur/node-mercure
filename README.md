@@ -21,6 +21,7 @@
 * Publisher#getClaims()
 * Docker image (iso with official image)
 * Prometheus metrics exporter
+* Events database
 * Export authorization.js mechanism
 * Discovery helpers
 * Increase code quality score
