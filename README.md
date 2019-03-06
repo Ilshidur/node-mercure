@@ -19,6 +19,7 @@
 
 * **CORS**
 * Publisher#getClaims()
+* Hearthbeat mechanism
 * Docker image (iso with official image)
 * Prometheus metrics exporter
 * Events database
