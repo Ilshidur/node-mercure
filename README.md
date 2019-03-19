@@ -68,6 +68,8 @@ This library provides 3 components : a `Hub`, a `Server` and a `Publisher` :
 
 ### Simple hub
 
+> -> *[Documentation](API.md#hub)*
+
 The `Hub` class is the core component that uses a simple `http.Server` instance. An existing instance can be provided to the `Hub`, thus the Hub will use it instead of creating a new one.
 
 **Use case :** implanting the hub on an existing `http.Server` app, without the need to handle external publishers (only the app does the publishing).
@@ -97,6 +99,8 @@ hub.listen();
 ```
 
 ### Hub server
+
+> -> *[Documentation](API.md#server)*
 
 The `Server` is built upon the `Hub` component. It creates a new Express instance and allows external publishers to `POST` an event to the hub.
 
@@ -133,6 +137,8 @@ const server = new SecuredHubServer(...);
 ```
 
 ### Publisher
+
+> -> *[Documentation](API.md#publisher)*
 
 It can be created in different ways :
 
