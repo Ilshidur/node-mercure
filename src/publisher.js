@@ -1,5 +1,6 @@
 const axios = require('axios');
 const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
 const jose = require('node-jose');
 const util = require('util');
 const querystring = require('querystring');
@@ -139,6 +140,14 @@ class Publisher {
         throw err;
       }
     }
+  }
+
+  getClaims() {
+    if (this.hub) {
+      return null
+    }
+
+    return jwt.decode(this.config.jwt);
   }
 }
 

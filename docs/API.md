@@ -29,6 +29,7 @@
     - [`Publisher#constructor(config || hub)` -> `Publisher`](#publisherconstructorconfig--hub---publisher)
     - [`Publisher#publish(topics, message, options)` -> `Promise<String>`](#publisherpublishtopics-message-options---promisestring)
     - [`Publisher#useEncryption(config)` -> `Promise<Object<String, String>>`](#publisheruseencryptionconfig---promiseobjectstring-string)
+    - [`Publisher#getClaims()` => `Object`](#publishergetclaims--object)
 
 ## Hub
 
@@ -304,3 +305,11 @@ Allows encryption of the sent update to the Hub.
 
 * `rsaPrivateKey` (`String`) : the used RSA private key.
 * `rsaPublicKey` (`String`) : the public RSA key, calculated from the private RSA key.
+
+### `Publisher#getClaims()` => `Object`
+
+Decodes the stored JWT used to send updates. If no JWT is used (e.g.: the Publisher is created with a `Hub` instance), returns `null`.
+
+**Arguments :** *(none)*
+
+**Returns :** an `Object` containing the decoded JWT's payload.
