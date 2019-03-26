@@ -268,12 +268,13 @@ Initializes a new publisher, ready to send messages to its hub.
 
 * The 1st and only argument is **required**. It is either :
   * a `Hub` instance (for publisher that are located in the same code base as the hub).
-  * an configuration `Object` : (usually for remote publishers)
+  * a configuration `Object` : (usually for remote publishers)
     * `protocol` (`String`, *defaults to `'https'`*)
     * `host` (`String`, **required**)
     * `port` (`Number`, *defaults to `80`*)
     * `path` (`Number`, *defaults to `'/hub'`*)
     * `jwt` (`String`, **required**)
+    * `rsaPrivateKey` (`String`, *optional*) : 
 
 ### `Publisher#publish(topics, message, options)` -> `Promise<String>`
 
@@ -298,8 +299,8 @@ Allows encryption of the sent update to the Hub.
 
 **Arguments :**
 
-* `config` (`Object`, **required**)
-  * `rsaPrivateKey` (`String`, *optional*) : the private RSA key that will be used to cypher the messages. If nothing is passed, the method will generate a new RSA public/private key pair.
+* `config` (`Object`, *optional*)
+  * `rsaPrivateKey` (`String`, *optional*) : the private RSA key that will be used to cypher the messages. If nothing is passed, the method will use the key passed in the class constructor. If nothing was passed, the method generates a new RSA public/private key pair.
 
 **Returns :** a `Promise` resolving an `Object` when the encryption mechanism is ready :
 
