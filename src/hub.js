@@ -71,6 +71,79 @@ class Hub extends EventEmitter {
     return authorize(req, this.config.subJwtKey || this.config.jwtKey, this.config.publishAllowedOrigins);
   }
 
+  async onSseConnection(client, { topic: topics, 'Last-Event-ID': queryLastEventId }) {
+    // Check the allowed topics in the subscriber's JWT.
+    let claims;
+    try {
+      claims = await this.authorizeSubscribe(client.req);
+    } catch (err) {
+      client.res.writeHead(401);
+      client.res.write('Unauthorized');
+      client.res.end();
+      return;
+    }
+
+    if (!claims && !this.config.allowAnonymous) {
+      client.res.writeHead(403);
+      client.res.write('Forbidden');
+      client.res.end();
+      return;
+    }
+
+    if (!topics) {
+      client.res.writeHead(400);
+      client.res.write('Missing "topic" parameter');
+      client.res.end();
+      return;
+    }
+
+    const topicsArray = Array.isArray(topics) ? topics : [topics];
+    if (this.config.maxTopics > 0 && topicsArray.length > this.config.maxTopics) {
+      client.res.writeHead(400);
+      client.res.write(`Exceeded limit of ${this.config.maxTopics} topics`);
+      client.res.end();
+      return;
+    }
+
+    // Set the HTTP headers to make it a persistent connection.
+    initializeClient.call(client);
+
+    const templates = [];
+    if (topicsArray.length > 0) {
+      for (const topic of topicsArray) {
+        try {
+          templates.push(uriTemplates(topic));
+        } catch (err) {
+          console.error(err);
+          client.res.writeHead(400);
+          client.res.write(`${topic} is not a valid URI template (RFC6570)`);
+          client.res.end();
+          return;
+        }
+      }
+    }
+
+    const { allTargetsAuthorized, authorizedTargets } = getAuthorizedTargets(claims, false);
+
+    const lastEventId = client.req.headers['last-event-id'] || queryLastEventId;
+    const subscriber = new Subscriber(client, allTargetsAuthorized, authorizedTargets, templates, lastEventId);
+
+    await this.subscribers.add(subscriber);
+    client.on('close', async () => {
+      await this.subscribers.delete(subscriber);
+      this.emit('unsubscribe', subscriber);
+    });
+
+    this.emit('subscribe', subscriber);
+
+    if (subscriber.lastEventId) {
+      const updates = await this.history.findFor(subscriber);
+      for (const update of updates) {
+        subscriber.send(update);
+      }
+    }
+  }
+
   async listen(port, addr = '0.0.0.0') {
     if (!port || !Number.isInteger(port)) {
       throw new Error('Invalid port', port);
@@ -101,78 +174,7 @@ class Hub extends EventEmitter {
 
     await this.history.start();
 
-    sse.on('connection', async (client, { topic: topics, 'Last-Event-ID': queryLastEventId }) => {
-      // Check the allowed topics in the subscriber's JWT.
-      let claims;
-      try {
-        claims = await this.authorizeSubscribe(client.req);
-      } catch (err) {
-        client.res.writeHead(401);
-        client.res.write('Unauthorized');
-        client.res.end();
-        return;
-      }
-
-      if (!claims && !this.config.allowAnonymous) {
-        client.res.writeHead(403);
-        client.res.write('Forbidden');
-        client.res.end();
-        return;
-      }
-
-      if (!topics) {
-        client.res.writeHead(400);
-        client.res.write('Missing "topic" parameter');
-        client.res.end();
-        return;
-      }
-
-      const topicsArray = Array.isArray(topics) ? topics : [topics];
-      if (this.config.maxTopics > 0 && topicsArray.length > this.config.maxTopics) {
-        client.res.writeHead(400);
-        client.res.write(`Exceeded limit of ${this.config.maxTopics} topics`);
-        client.res.end();
-        return;
-      }
-
-      // Set the HTTP headers to make it a persistent connection.
-      initializeClient.call(client);
-
-      const templates = [];
-      if (topicsArray.length > 0) {
-        for (const topic of topicsArray) {
-          try {
-            templates.push(uriTemplates(topic));
-          } catch (err) {
-            console.error(err);
-            client.res.writeHead(400);
-            client.res.write(`${topic} is not a valid URI template (RFC6570)`);
-            client.res.end();
-            return;
-          }
-        }
-      }
-
-      const { allTargetsAuthorized, authorizedTargets } = getAuthorizedTargets(claims, false);
-
-      const lastEventId = client.req.headers['last-event-id'] || queryLastEventId;
-      const subscriber = new Subscriber(client, allTargetsAuthorized, authorizedTargets, templates, lastEventId);
-
-      await this.subscribers.add(subscriber);
-      client.on('close', async () => {
-        await this.subscribers.delete(subscriber);
-        this.emit('unsubscribe', subscriber);
-      });
-
-      this.emit('subscribe', subscriber);
-
-      if (subscriber.lastEventId) {
-        const updates = await this.history.findFor(subscriber);
-        for (const update of updates) {
-          subscriber.send(update);
-        }
-      }
-    });
+    sse.on('connection', this.onSseConnection);
   }
 
   async dispatchUpdate(topics, data, opts = {}) {

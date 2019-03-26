@@ -79,20 +79,24 @@ process.on('SIGINT', () => {
       '@id': 'http://localhost:3000/books/666.jsonld',
     };
 
-    const updateId = await publisher.publish(
-      ['http://localhost:3000/books/666'],
-      JSON.stringify(data),
-      {
-        // allTargets: true // Only available on same instance publishers, ignored otherwise.
-        // Not public, so sending with specific targets :
-        targets: ['http://localhost:3000/books/{id}'],
-        id: 'wesh',
-        type: 'message',
-        retry: 1000,
-      },
-    );
+    try {
+      const updateId = await publisher.publish(
+        ['http://localhost:3000/books/666'],
+        JSON.stringify(data),
+        {
+          // allTargets: true // Only available on same instance publishers, ignored otherwise.
+          // Not public, so sending with specific targets :
+          targets: ['http://localhost:3000/books/{id}'],
+          id: 'wesh',
+          type: 'message',
+          retry: 1000,
+        },
+      );
 
-    console.log('Published', updateId);
+      console.log('Published', updateId);
+    } catch (err) {
+      console.error('[Publisher]', err);
+    }
   }, 5000);
 
 })()
