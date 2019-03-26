@@ -18,7 +18,6 @@
 ## TODOs
 
 * **CORS**
-* Publisher#getClaims()
 * Hearthbeat mechanism (https://github.com/dunglas/mercure/pull/53)
 * Docker image (iso with official image)
 * Prometheus metrics exporter
