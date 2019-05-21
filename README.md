@@ -84,7 +84,7 @@ It handles :
 const http = require('http');
 const { Hub } = require('mercure');
 
-const server = http.createHttpServer((req, res) => {
+const server = http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain' });
   res.end('200');
 });
@@ -94,7 +94,7 @@ const hub = new Hub(server, {
   path: '/hub',
 });
 
-hub.listen();
+hub.listen(3000);
 ```
 
 ### Hub server
