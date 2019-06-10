@@ -121,7 +121,7 @@ const server = new Server({
 server.listen(3000);
 ```
 
-Because the Server is leverages Express, it is possible to add middlewares in front of the internal Hub middleware :
+Because the Server leverages Express, it is possible to add middlewares in front of the internal Hub middleware :
 
 ```javascript
 const compression = require('compression');
