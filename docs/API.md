@@ -8,6 +8,7 @@
   - [Table of contents](#table-of-contents)
   - [Hub](#hub)
     - [`Hub#constructor(server, config)` -> `Hub`](#hubconstructorserver-config---hub)
+    - [`Hub#on(event, callback)` -> `void`](#hubonevent-callback---void)
     - [`Hub#listen(port, addr)` -> `Promise<void>`](#hublistenport-addr---promisevoid)
     - [`Hub#dispatchUpdate(topics, data, opts)` -> `Promise<Number>`](#hubdispatchupdatetopics-data-opts---promisenumber)
     - [`Hub#generateJwt(claims)` -> `Promise<String>`](#hubgeneratejwtclaims---promisestring)
@@ -55,6 +56,21 @@ The instance does not immediately "listen". Calling the `Hub#listen()` method is
   * `redis` (`Object`, *optional*) : if defined, the Hub will connect to a Redis instance and use it to store the events and scale across multiple instances. This option is directly passed to the `redis.createInstance()` method of the [`redis`](https://www.npmjs.com/package/redis) npm module.
 
 **Returns :** a new `Hub` instance.
+
+### `Hub#on(event, callback)` -> `void`
+
+Creates an event listener.
+
+**Events :**
+
+| Event           | Description                                                                                                                                                                           | Callback                |
+|-----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------|
+| `'connect'`     | Triggered when a client establishes a successful connection to the Hub, or connected to a cluster instance if Redis clustering is enabled.                                            | { topics }              |
+| `'subscribe'`   | Triggered when a client starts listening to incoming events after establishing a successful connection to the Hub, or connected to a cluster instance if Redis clustering is enabled. | { subscriber, topics }  |
+| `'unsubscribe'` | Triggered when a client closes its connection to the Hub, or to a cluster instance if Redis clustering is enabled.                                                                    | { subscriber, topics }  |
+| `'publish'`     | Triggered when a publisher sends a new event.                                                                                                                                         |  { event, subscribers } |
+| `'scale-up'`    | Triggered when a new Hub instance joins the cluster. **Requires Redis clustering.**                                                                                                   |                         |
+| `'scale-down'`  | Triggered when a new Hub instance leaves the cluster or looses connection. **Requires Redis clustering.**                                                                             |                         |
 
 ### `Hub#listen(port, addr)` -> `Promise<void>`
 

@@ -26,8 +26,9 @@
   * Events count / size (in Bytes), per publisher
   * Publishers IPs
   * Instances count
-* `hub.on('connect')` listeners
-* Events database
+* [Redis] Instances storage
+* [Redis] Find a way to clear Redis if the process gets interrupted
+* Dispatch `subscribe` & `unsubscribe` events across Redis clustered instances
 * Export authorization.js mechanism
 * Discovery helpers
 * Handle `Forwarded` and `X-Forwarded-For` headers ([related issue](https://github.com/dunglas/mercure/issues/114))
@@ -35,11 +36,13 @@
 * Allow the dev to pass an URL in the `Publisher` contructor
 * `Publisher` : allow the user to specify a JWT key and the claims instead of a JWT
 * `Publisher` : getters like `get host()`, `port`, `protocol`...
+* Handle Redis authentication
+* Handle Redis Sentinel mode
+* Handle Redis Cluster mode
 * Increase code quality score
 * JSDoc
 * Logging
 * Unit tests
-* Find a way to clear Redis if the process gets interrupted
 * Benchmarks
 
 ## State
@@ -74,7 +77,7 @@ npm install mercure --save
 
 This library provides 3 components : a `Hub`, a `Server` and a `Publisher` :
 
-![Classes preview](classes-preview.jpg "Classes preview")
+![Classes preview](docs/classes-preview.jpg "Classes preview")
 
 ### Simple hub
 
@@ -105,6 +108,10 @@ const hub = new Hub(server, {
   path: '/hub',
 });
 
+hub.on('subscribe', (subscriber) => {
+  console.log('New subscriber');
+});
+
 hub.listen(3000);
 ```
 
@@ -127,6 +134,10 @@ const { Server } = require('mercure');
 const server = new Server({
   jwtKey: '!UnsecureChangeMe!',
   path: '/hub',
+});
+
+server.hub.on('subscribe', (subscriber) => {
+  console.log('New subscriber');
 });
 
 server.listen(3000);
