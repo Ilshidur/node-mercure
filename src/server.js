@@ -64,6 +64,7 @@ function publishEndpointHandler() {
         ...id ? { id } : {},
         ...type ? { type } : {},
         ...retry ? { retry } : {},
+        publisher: { ipv6: req.connection.remoteAddress },
       });
 
       return res.status(200).send(updateId);

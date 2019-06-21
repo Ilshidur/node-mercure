@@ -13,6 +13,10 @@ const server = new Server({
     host: 'localhost',
     port: 6379,
   },
+  prometheus: {
+    host: 'localhost',
+    port: 9090,
+  },
 });
 
 process.on('SIGTERM', () => {
@@ -21,27 +25,26 @@ process.on('SIGTERM', () => {
 });
 process.on('SIGINT', () => {
   console.log('Ending server ...');
-  server.endSync();
+  server.end();
 });
 
 (async () => {
-  await server.listen(3000);
+  await server.listen(Number(process.argv[2]) || 3000);
 
   // === TEST ===
 
   const crypto = require('crypto');
   const util = require('util');
 
-  // const publisher = new Publisher(server.hub);
-
   const jwt = await server.hub.generatePublishJwt(['http://localhost:3000/books/{id}']);
-  const publisher = new Publisher({
-    protocol: 'http', // or 'https'
-    host: 'localhost',
-    port: 3000,
-    path: '/hub',
-    jwt,
-  });
+  // const publisher = new Publisher({
+  //   protocol: 'http', // or 'https'
+  //   host: 'localhost',
+  //   port: 3000,
+  //   path: '/hub',
+  //   jwt,
+  // });
+  const publisher = new Publisher(server.hub);
 
   console.log('Using encryption ...');
   // await publisher.useEncryption({
@@ -55,19 +58,46 @@ process.on('SIGINT', () => {
   // });
   console.log('Generated keys !');
 
-  server.hub.on('subscribe', (subscriber) => {
-    console.log('New subscriber');
+  server.hub.on('connect', ({ topics }) => {
+    console.log('Connection established');
+    // console.log(topics);
   });
 
-  server.hub.on('unsubscribe', (subscriber) => {
+  server.hub.on('subscribe', ({ subscriber, topics }) => {
+    console.log('Subscriber joined');
+    // console.log(subscriber);
+    // console.log(topics);
+  });
+
+  server.hub.on('unsubscribe', ({ subscriber, topics }) => {
     console.log('Subscriber left');
+    // console.log(subscriber);
+    // console.log(topics);
   });
 
-  server.hub.on('publish', (update, id) => {
-    // console.log('Published', update);
+  server.hub.on('publish', ({ event, subscribers }) => {
+    console.log('Published');
+    console.log(event);
+    console.log(subscribers);
   });
 
-  setInterval(async () => {
+  server.hub.on('scale-up', (update) => {
+    console.log('Scaling up !');
+  });
+  server.hub.on('scale-down', (update) => {
+    console.log('Scaling down !');
+  });
+
+  let interval
+
+  server.hub.on('stopping', (update, id) => {
+    clearInterval(interval);
+  });
+  server.hub.on('stopped', (update, id) => {
+    clearInterval(interval);
+  });
+
+  interval = setInterval(async () => {
     if (await server.hub.subscribers.getTotalCount() === 0) {
       return;
     }
@@ -93,7 +123,7 @@ process.on('SIGINT', () => {
         },
       );
 
-      console.log('Published', updateId);
+      // console.log('Published', updateId);
     } catch (err) {
       console.error('[Publisher]', err);
     }

@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const EventEmitter = require('events');
 const http = require('http');
 const jwt = require('jsonwebtoken');
+const ip = require('internal-ip');
 const SSE = require('sse');
 const uriTemplates = require('uri-templates');
 const util = require('util');
@@ -11,6 +12,7 @@ const { authorize, getAuthorizedTargets } = require('./authorization');
 const Subscriber = require('./subscriber');
 const Update = require('./update');
 const History = require('./history');
+const Discovery = require('./discovery');
 const { createRedisClient } = require('./redis');
 const SubscribersStore = require('./subscribers_store');
 
@@ -33,6 +35,8 @@ class Hub extends EventEmitter {
   constructor(server, config) {
     super();
 
+    this.state = 'running';
+
     this.config = {
       ...defaultOptions,
       ...config || (typeof server.listen !== 'function' ? server : {})
@@ -53,7 +57,13 @@ class Hub extends EventEmitter {
     }
 
     this.subscribers = new SubscribersStore(this.config.id, this.redis);
-    this.history = new History(this.redis);
+
+    this.pub = this.redis.duplicate();
+    this.sub = this.redis.duplicate();
+    this.history = new History(this.redis, this.pub, this.sub);
+    if (this.redis) {
+      this.discovery = new Discovery(this.config.id, this.redis, this.pub, this.sub);
+    }
   }
 
   get isMercureHub() {
@@ -72,6 +82,12 @@ class Hub extends EventEmitter {
   }
 
   async onSseConnection(client, { topic: topics, 'Last-Event-ID': queryLastEventId }) {
+    const topicsArray = Array.isArray(topics) ? topics : [topics];
+
+    this.emit('connect', {
+      ...topics ? { topics: topicsArray } : {},
+    });
+
     // Check the allowed topics in the subscriber's JWT.
     let claims;
     try {
@@ -97,7 +113,6 @@ class Hub extends EventEmitter {
       return;
     }
 
-    const topicsArray = Array.isArray(topics) ? topics : [topics];
     if (this.config.maxTopics > 0 && topicsArray.length > this.config.maxTopics) {
       client.res.writeHead(400);
       client.res.write(`Exceeded limit of ${this.config.maxTopics} topics`);
@@ -131,10 +146,20 @@ class Hub extends EventEmitter {
     await this.subscribers.add(subscriber);
     client.on('close', async () => {
       await this.subscribers.delete(subscriber);
-      this.emit('unsubscribe', subscriber);
+      this.emit('unsubscribe', {
+        subscriber: {
+          ip: subscriber.sseClient.req.connection.remoteAddress,
+        },
+        topics: topicsArray,
+      });
     });
 
-    this.emit('subscribe', subscriber);
+    this.emit('subscribe', {
+      subscriber: {
+        ip: subscriber.sseClient.req.connection.remoteAddress,
+      },
+      topics: topicsArray,
+    });
 
     if (subscriber.lastEventId) {
       const updates = await this.history.findFor(subscriber);
@@ -162,6 +187,18 @@ class Hub extends EventEmitter {
       verifyRequest: (req) => req.url.startsWith('/hub') && (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS')
     });
 
+    if (this.discovery) {
+      this.discovery.on('scale-up', async (update) => {
+        this.emit('scale-up', update);
+      });
+      this.discovery.on('scale-down', async (update) => {
+        this.emit('scale-down', update);
+      });
+
+      await this.discovery.start();
+      await this.discovery.join();
+    }
+
     this.history.on('update', async (update) => {
       const subscribers = this.subscribers.getList().filter(subscriber => subscriber.canReceive(update))
 
@@ -169,12 +206,17 @@ class Hub extends EventEmitter {
         subscriber.sendAsync(update);
       }
 
-      this.emit('publish', update, update.event.id);
+      this.emit('publish', {
+        event: update,
+        subscribers: subscribers.map(s => ({
+          ip: s.sseClient.req.connection.remoteAddress,
+        })),
+      });
     });
 
     await this.history.start();
 
-    sse.on('connection', this.onSseConnection);
+    sse.on('connection', this.onSseConnection.bind(this));
   }
 
   async dispatchUpdate(topics, data, opts = {}) {
@@ -191,12 +233,18 @@ class Hub extends EventEmitter {
     // Handle when topics is a string
     const topicsArray = Array.isArray(topics) ? topics : [topics];
 
+    const publisher = opts.publisher || {
+      id: this.config.id,
+      ipv4: await ip.v4(),
+      ipv6: await ip.v6(),
+    };
+
     const update = new Update(targets, topicsArray, {
       data,
       id: updateId,
       type: opts.type || 'message',
       retry: Number(opts.retry) || 0,
-    });
+    }, publisher);
 
     await this.history.push(update);
 
@@ -241,8 +289,19 @@ class Hub extends EventEmitter {
   }
 
   async end({ force = false } = {}) {
+    if (this.state === 'stopping' || this.state === 'stopped') {
+      return
+    }
+
+    this.state = 'stopping';
+    this.emit('stopping');
+
     if (!force) {
       await this.subscribers.clear(true);
+    }
+
+    if (this.discovery) {
+      await this.discovery.leave();
     }
 
     if (this.redis) {
@@ -255,15 +314,29 @@ class Hub extends EventEmitter {
 
     await this.history.end({ force });
     await this.server.close();
+
+    this.state = 'stopped';
+    this.emit('stopped');
   }
 
   endSync() {
+    if (this.state === 'stopping' || this.state === 'stopped') {
+      return
+    }
+
+    this.state = 'stopping';
+    this.emit('stopping');
+
     this.subscribers.clearSync();
     this.history.endSync();
     if (this.redis) {
       this.redis.end(false);
     }
+    this.server.close();
     // Server connections will be interrupted.
+
+    this.state = 'stopped';
+    this.emit('stopped');
   }
 }
 
