@@ -13,6 +13,14 @@ class SubscribersStore {
   }
 
   async syncRedis() {
+    if (!this.redisClient) {
+      throw new Error(`Can't sync subscribers list without Redis set up.`);
+    }
+
+    if (!this.redisClient.connected) {
+      throw new Error(`No active connection to Redis.`);
+    }
+
     await this.redisClient.HMSETAsync(this.getRedisKey(), {
       [`process-${this.id}`]: JSON.stringify(this.getList().map(s => s.toValue()))
     });
@@ -26,6 +34,11 @@ class SubscribersStore {
     if (!this.redisClient) {
       throw new Error(`Can't determine total subscribers count without Redis set up.`);
     }
+
+    if (!this.redisClient.connected) {
+      throw new Error(`No active connection to Redis.`);
+    }
+
     return (await this.getFullList()).length;
   }
 
@@ -37,6 +50,11 @@ class SubscribersStore {
     if (!this.redisClient) {
       throw new Error(`Can't get full subscribers list without Redis set up.`);
     }
+
+    if (!this.redisClient.connected) {
+      throw new Error(`No active connection to Redis.`);
+    }
+
     const list = await this.redisClient.HVALSAsync(this.getRedisKey());
     return list
       .map(subscribers => subscribers && JSON.parse(subscribers))
