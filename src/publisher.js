@@ -113,6 +113,7 @@ class Publisher {
 
   async publish(topics, message, options = {}) {
     if (this.hub) {
+      // `options.publisher` is passed in `dispatchUpdate()` as well.
       return await this.hub.dispatchUpdate(topics, message, options)
     }
 
