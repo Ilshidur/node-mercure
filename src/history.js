@@ -3,13 +3,13 @@ const EventEmitter = require('events');
 const Update = require('./update');
 
 class History extends EventEmitter {
-  constructor(redisClient) {
+  constructor(redisClient, pub, sub) {
     super();
 
-    if (redisClient) {
+    if (redisClient && pub && sub) {
       this.redisClient = redisClient;
-      this.sub = redisClient.duplicate();
-      this.pub = redisClient.duplicate();
+      this.sub = sub;
+      this.pub = pub;
     }
 
     if (!this.hasRedis) {
@@ -28,7 +28,7 @@ class History extends EventEmitter {
 
     if (this.hasRedis) {
       const serializedUpdate = update.serialize();
-      await this.pub.publishAsync('mercure', serializedUpdate);
+      await this.pub.publishAsync('mercure-events', serializedUpdate);
       this.redisClient.rpushAsync('mercure-events', serializedUpdate);
     } else {
       this.updates.push(update);
@@ -63,11 +63,13 @@ class History extends EventEmitter {
 
   async start() {
     if (this.hasRedis) {
-      this.sub.on('message', (_, message) => {
-        this.emit('update', Update.unserialize(message));
+      this.sub.on('message', (subject, message) => {
+        if (subject === 'mercure-events') {
+          this.emit('update', Update.unserialize(message));
+        }
       });
 
-      await this.sub.subscribeAsync('mercure');
+      await this.sub.subscribeAsync('mercure-events');
     }
 
     this.running = true;
