@@ -65,7 +65,7 @@ function getAuthorizedTargets(claims, isPublisher) {
     };
   }
 
-  if (!claims.mercure) {
+  if (!claims.payload.mercure) {
     // Only allow public updates.
     return {
       allTargetsAuthorized: false,
@@ -73,7 +73,7 @@ function getAuthorizedTargets(claims, isPublisher) {
     };
   }
 
-  const providedTargets = isPublisher ? claims.mercure.publish : claims.mercure.subscribe;
+  const providedTargets = isPublisher ? claims.payload.mercure.publish : claims.payload.mercure.subscribe;
 
   if (providedTargets.some(target => target === '*')) {
     return {
