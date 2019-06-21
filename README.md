@@ -20,7 +20,11 @@
 * **CORS**
 * Hearthbeat mechanism (https://github.com/dunglas/mercure/pull/53)
 * Docker image (iso with official image)
-* Prometheus metrics exporter
+* Prometheus metrics exporter :
+  * Subscribers count
+  * Events count / size (in Bytes), per publisher
+  * Publishers IPs
+  * Instances count
 * `hub.on('connect')` listeners
 * Events database
 * Export authorization.js mechanism
