@@ -29,6 +29,7 @@
 * Events database
 * Export authorization.js mechanism
 * Discovery helpers
+* Handle `Forwarded` and `X-Forwarded-For` headers ([related issue](https://github.com/dunglas/mercure/issues/114))
 * Increase code quality score
 * JSDoc
 * Logging
