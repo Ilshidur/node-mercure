@@ -3,6 +3,7 @@
 [Mercure](https://github.com/dunglas/mercure) Hub & Publisher implemented in Node.js.
 
 ![stability-beta](https://img.shields.io/badge/stability-beta-green.svg)
+[![Build Status][build-badge]][build-url]
 
 [![npm version][version-badge]][version-url]
 [![Known Vulnerabilities][vulnerabilities-badge]][vulnerabilities-url]
@@ -243,6 +244,8 @@ The new JWT Key will be output to stdout.
 
 GNU GENERAL PUBLIC LICENSE v3.
 
+[build-badge]: https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2FIlshidur%2Fnode-mercure%2Fbadge&style=flat
+[build-url]: https://actions-badge.atrox.dev/Ilshidur/node-mercure/goto
 [version-badge]: https://img.shields.io/npm/v/mercure.svg
 [version-url]: https://www.npmjs.com/package/mercure
 [vulnerabilities-badge]: https://snyk.io/test/npm/mercure/badge.svg
