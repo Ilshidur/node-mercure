@@ -31,6 +31,7 @@
 * Export authorization.js mechanism
 * Discovery helpers
 * Handle `Forwarded` and `X-Forwarded-For` headers ([related issue](https://github.com/dunglas/mercure/issues/114))
+* Provide a Socket.io adapter ([see this thread](https://github.com/socketio/socket.io-adapter))
 * Increase code quality score
 * JSDoc
 * Logging
