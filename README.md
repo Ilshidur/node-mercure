@@ -34,6 +34,7 @@
 * Provide a Socket.io adapter ([see this thread](https://github.com/socketio/socket.io-adapter))
 * Allow the dev to pass an URL in the `Publisher` contructor
 * `Publisher` : allow the user to specify a JWT key and the claims instead of a JWT
+* `Publisher` : getters like `get host()`, `port`, `protocol`...
 * Increase code quality score
 * JSDoc
 * Logging
