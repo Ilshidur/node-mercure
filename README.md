@@ -32,6 +32,8 @@
 * Discovery helpers
 * Handle `Forwarded` and `X-Forwarded-For` headers ([related issue](https://github.com/dunglas/mercure/issues/114))
 * Provide a Socket.io adapter ([see this thread](https://github.com/socketio/socket.io-adapter))
+* Allow the dev to pass an URL in the `Publisher` contructor
+* `Publisher` : allow the user to specify a JWT key and the claims instead of a JWT
 * Increase code quality score
 * JSDoc
 * Logging
