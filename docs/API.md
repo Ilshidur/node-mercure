@@ -47,7 +47,7 @@ The instance does not immediately "listen". Calling the `Hub#listen()` method is
   * `jwtKey` (`String`, **required**) : the publisher's AND subscriber's JSON Web Token key. Throws if either `pubJwtKey` or `subJwtKey` are passed.
   * `pubJwtKey` (`String`, **required**) : the publisher's jwt key. Throws if `jwtKey` is also passed.
   * `subJwtKey` (`String`, **required**) : the subscriber's jwt key. Throws if `jwtKey` is also passed.
-  * `path` (`String`, *defaults to `'/hub'`*) : the hub's route.
+  * `path` (`String`, *defaults to `'/.well-known/mercure'`*) : the hub's route.
   * `allowAnonymous` (`Boolean`, *defaults to `false`*) : set to `true` to allow subscribers with no valid JWT to connect.
   * `maxTopics` (`Number`, *defaults to `0`*) : maximum topics count the subscribers can subscribe to. `0` means no limit.
   * `ignorePublisherId` (`Boolean`, *defaults to `true`*) : set to `false` to accept the event ID by the publisher instead of creating a new one.
@@ -201,7 +201,7 @@ The instance does not immediately "listen". Calling the `Server#listen()` method
   * `jwtKey` (`String`, **required**) : the publisher's AND subscriber's JSON Web Token key. Throws if either `pubJwtKey` or `subJwtKey` are passed.
   * `pubJwtKey` (`String`, **required**) : the publisher's jwt key. Throws if `jwtKey` is also passed.
   * `subJwtKey` (`String`, **required**) : the subscriber's jwt key. Throws if `jwtKey` is also passed.
-  * `path` (`String`, *defaults to `'/hub'`*) : the hub's route.
+  * `path` (`String`, *defaults to `'/.well-known/mercure'`*) : the hub's route.
   * `allowAnonymous` (`Boolean`, *defaults to `false`*) : set to `true` to allow subscribers with no valid JWT to connect.
   * `maxTopics` (`Number`, *defaults to `0`*) : maximum topics count the subscribers can subscribe to. `0` means no limit.
   * `ignorePublisherId` (`Boolean`, *defaults to `true`*) : set to `false` to accept the event ID by the publisher instead of creating a new one.
@@ -272,7 +272,7 @@ Initializes a new publisher, ready to send messages to its hub.
     * `protocol` (`String`, *defaults to `'https'`*)
     * `host` (`String`, **required**)
     * `port` (`Number`, *defaults to `80`*)
-    * `path` (`Number`, *defaults to `'/hub'`*)
+    * `path` (`String`, *defaults to `'/.well-known/mercure'`*)
     * `jwt` (`String`, **required**)
     * `rsaPrivateKey` (`String`, *optional*) : 
 

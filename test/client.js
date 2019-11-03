@@ -2,7 +2,7 @@ const EventSource = require('eventsource');
 
 // The subscriber subscribes to updates for the https://example.com/foo topic
 // and to any topic matching https://example.com/books/{name}
-const url = new URL('http://localhost:3000/hub');
+const url = new URL('http://localhost:3000/.well-known/mercure');
 url.searchParams.append('topic', 'http://localhost:3000/books/{id}');
 url.searchParams.append('topic', 'http://localhost:3000/users/dunglas');
 

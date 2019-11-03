@@ -16,7 +16,7 @@ const SubscribersStore = require('./subscribers_store');
 
 const defaultOptions = {
   id: uuidv4(),
-  path: '/hub',
+  path: '/.well-known/mercure',
   allowAnonymous: false, // Don't force subscriber authorization.
   maxTopics: 0,
   ignorePublisherId: true,
@@ -159,7 +159,7 @@ class Hub extends EventEmitter {
 
     const sse = new SSE(this.server, {
       path: this.config.path,
-      verifyRequest: (req) => req.url.startsWith('/hub') && (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS')
+      verifyRequest: (req) => req.url.startsWith('/.well-known/mercure') && (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS')
     });
 
     this.history.on('update', async (update) => {

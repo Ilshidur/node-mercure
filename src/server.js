@@ -79,7 +79,7 @@ function publishEndpointHandler() {
 class Server {
   constructor(config = {}) {
     this.config = {
-      path: '/hub',
+      path: '/.well-known/mercure',
       ...config
     };
     this.app = express();
@@ -96,7 +96,7 @@ class Server {
   }
 
   static createFromExpressApp(app, config) {
-    app.post('/hub', publishEndpointHandler());
+    app.post('/.well-known/mercure', publishEndpointHandler());
 
     const server = http.Server(app);
 
