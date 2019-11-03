@@ -26,7 +26,7 @@ function validateConfig(config) {
     validatedConfig.port = 80;
   }
   if (!validatedConfig.path) {
-    validatedConfig.path = '/hub';
+    validatedConfig.path = '/.well-known/mercure';
   }
 
   // Validations

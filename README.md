@@ -14,14 +14,14 @@
 
 [![NPM][npm-stats-badge]][npm-stats-url]
 
-*Note : this npm package has been **transfered** for a new project by the [initial owner](https://www.npmjs.com/~francois), which serves a totally different purpose. This new version is an implementation of the [Mercure protocol](https://github.com/dunglas/mercure). The previous `mercure` package had 1 release (`0.0.1`) and served as a file downloader. You can still access it : https://www.npmjs.com/package/mercure/v/0.0.1. Please make sure to **lock** this version in your `package.json` file, as the new versions will begin at `0.0.2` and will keep following the [semver versioning](https://semver.org).*
+*Note: this npm package has been **transfered** for a new project by the [initial owner](https://www.npmjs.com/~francois), which serves a totally different purpose. This new version is an implementation of the [Mercure protocol](https://github.com/dunglas/mercure). The previous `mercure` package had 1 release (`0.0.1`) and served as a file downloader. You can still access it: https://www.npmjs.com/package/mercure/v/0.0.1. Please make sure to **lock** this version in your `package.json` file, as the new versions will begin at `0.0.2` and will keep following the [semver versioning](https://semver.org).*
 
 ## TODOs
 
 * **CORS**
 * Hearthbeat mechanism (https://github.com/dunglas/mercure/pull/53)
 * Docker image (iso with official image)
-* Prometheus metrics exporter :
+* Prometheus metrics exporter:
   * Subscribers count
   * Events count / size (in Bytes), per publisher
   * Publishers IPs
@@ -33,8 +33,8 @@
 * Handle `Forwarded` and `X-Forwarded-For` headers ([related issue](https://github.com/dunglas/mercure/issues/114))
 * Provide a Socket.io adapter ([see this thread](https://github.com/socketio/socket.io-adapter))
 * Allow the dev to pass an URL in the `Publisher` contructor
-* `Publisher` : allow the user to specify a JWT key and the claims instead of a JWT
-* `Publisher` : getters like `get host()`, `port`, `protocol`...
+* `Publisher`: allow the user to specify a JWT key and the claims instead of a JWT
+* `Publisher`: getters like `get host()`, `port`, `protocol`...
 * Increase code quality score
 * JSDoc
 * Logging
@@ -72,7 +72,7 @@ npm install mercure --save
 
 ## Usage
 
-This library provides 3 components : a `Hub`, a `Server` and a `Publisher` :
+This library provides 3 components: a `Hub`, a `Server` and a `Publisher`:
 
 ![Classes preview](classes-preview.jpg "Classes preview")
 
@@ -82,9 +82,9 @@ This library provides 3 components : a `Hub`, a `Server` and a `Publisher` :
 
 The `Hub` class is the core component that uses a simple `http.Server` instance. An existing instance can be provided to the `Hub`, thus the Hub will use it instead of creating a new one.
 
-**Use case :** implanting the hub on an existing `http.Server` app, without the need to handle external publishers (only the app does the publishing).
+**Use case:** implanting the hub on an existing `http.Server` app, without the need to handle external publishers (only the app does the publishing).
 
-It handles :
+It handles:
 
 * the SSE connections
 * the events database
@@ -102,7 +102,7 @@ const server = http.createServer((req, res) => {
 
 const hub = new Hub(server, {
   jwtKey: '!UnsecureChangeMe!',
-  path: '/hub',
+  path: '/.well-known/mercure',
 });
 
 hub.listen(3000);
@@ -114,9 +114,9 @@ hub.listen(3000);
 
 The `Server` is built upon the `Hub` component. It creates a new Express instance and allows external publishers to `POST` an event to the hub.
 
-**Use case :** implanting he hub on an new application that is meant to accept external publishers, with no other HTTP server ... or one listening on a different port.
+**Use case:** implanting he hub on an new application that is meant to accept external publishers, with no other HTTP server ... or one listening on a different port.
 
-It handles **everything the `Hub` does**, plus :
+It handles **everything the `Hub` does**, plus:
 
 * a freshly created Express instance, built upon the Hub's `http.Server` (middlewares can be applied to enhance security)
 * external publishers (POST requests)
@@ -126,13 +126,13 @@ const { Server } = require('mercure');
 
 const server = new Server({
   jwtKey: '!UnsecureChangeMe!',
-  path: '/hub',
+  path: '/.well-known/mercure',
 });
 
 server.listen(3000);
 ```
 
-Because the Server leverages Express, it is possible to add middlewares in front of the internal Hub middleware :
+Because the Server leverages Express, it is possible to add middlewares in front of the internal Hub middleware:
 
 ```javascript
 const compression = require('compression');
@@ -150,13 +150,13 @@ const server = new SecuredHubServer(...);
 
 > -> *[Documentation](docs/API.md#publisher)*
 
-It can be created in different ways :
+It can be created in different ways:
 
 * using an existing `Hub` instance (when the app is meant to be THE ONLY publisher)
 * using an existing `Server` instance (when the app is meant to be a publisher)
-* using configuration : `host`, `port`... (when the publisher and the hub are distant)
+* using configuration: `host`, `port`... (when the publisher and the hub are distant)
 
-It handles :
+It handles:
 
 * Message publication to the Hub
 * Message encryption *(optional)*
@@ -168,7 +168,7 @@ const publisher = new Publisher({
   protocol: 'https', // or 'http', but please don't.
   host: 'example.com',
   port: 3000,
-  path: '/hub',
+  path: '/.well-known/mercure',
   jwt: 'PUBLISHER_JWT',
 });
 
@@ -192,7 +192,7 @@ API docs can be found [in the docs/API.md file](docs/API.md).
 
 In certain cases, the Mercure hub can be hosted by a third-party host. You don't really want them to "sniff" all your cleartext messages. To make the Publisher => Hub => Subscriber flow fully encrypted, it is required that the Publisher sends encrypted data.
 
-To achieve this, the `Publisher#useEncryption()` method will activate messages encryption. Thus, the Hub will not be able to access your private datas :
+To achieve this, the `Publisher#useEncryption()` method will activate messages encryption. Thus, the Hub will not be able to access your private datas:
 
 ```javascript
 const crypto = require('crypto');
@@ -223,7 +223,7 @@ await publisher.publish(
 );
 ```
 
-Decrypting :
+Decrypting:
 
 ```javascript
 const jose = require('node-jose');
@@ -236,7 +236,7 @@ console.log(decrypted.plaintext.toString());
 
 ## Kill switch
 
-In case the hub must urgently close all connections (e.g.: in case of compromission of the JWT key), a kill switch is available :
+In case the hub must urgently close all connections (e.g.: in case of compromission of the JWT key), a kill switch is available:
 
 ```javascript
 await hub.killSwitch();

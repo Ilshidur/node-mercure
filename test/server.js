@@ -2,7 +2,7 @@ const { Server, Publisher } = require('../src');
 
 const server = new Server({
   jwtKey: '!UnsecureChangeMe!',
-  path: '/hub',
+  path: '/.well-known/mercure',
   // Additional check for POST request made in a browser :
   publishAllowedOrigins: ['http://localhost:3000'],
   allowAnonymous: true, // Don't force subscriber authorization.
@@ -39,7 +39,7 @@ process.on('SIGINT', () => {
     protocol: 'http', // or 'https'
     host: 'localhost',
     port: 3000,
-    path: '/hub',
+    path: '/.well-known/mercure',
     jwt,
   });
 
