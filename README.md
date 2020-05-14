@@ -46,6 +46,8 @@
 
 This is a **beta version**. This has not fully been tested in production yet.
 
+This implementation does not reflect the [latest specification](https://github.com/dunglas/mercure/pull/288) since they got changed. I don't recommend to use this module.
+
 ## Requirements
 
 * node.js **>= 11.7.0**
