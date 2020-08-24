@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/Ilshidur/node-mercure#readme",
   "dependencies": {
-    "axios": "^0.19.0",
+    "axios": "^0.20.0",
     "bluebird": "^3.5.3",
     "cookie": "0.4.0",
     "express": "4.17.1",
