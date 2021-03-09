@@ -26,7 +26,7 @@
     "redis": "^2.8.0",
     "sse": "0.0.8",
     "uri-templates": "0.2.0",
-    "uuid": "3.4.0"
+    "uuid": "8.3.2"
   },
   "devDependencies": {
     "eventsource": "1.0.7"
