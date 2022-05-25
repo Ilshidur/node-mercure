@@ -29,6 +29,6 @@
     "uuid": "3.4.0"
   },
   "devDependencies": {
-    "eventsource": "1.0.7"
+    "eventsource": "2.0.2"
   }
 }
